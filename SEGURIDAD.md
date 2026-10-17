@@ -33,6 +33,8 @@ Las páginas HTML de GitHub Pages son públicas. RLS protege los datos aunque al
 
 Passkeys es una función experimental de Supabase; cliente fijado en `2.105.0`. La confianza corresponde al navegador con token local más una llave válida del usuario; algunas llaves pueden sincronizarse entre dispositivos. Borrar datos del navegador exige volver a registrar el equipo tras MFA.
 
+Supabase conserva activada la opción «Limit duration of AAL1 sessions»: una sesión con passkey que permanezca en AAL1 puede terminar tras 15 minutos sin TOTP, aunque la autorización interna de equipo tenga un máximo de 8 horas. No se desactivó esta protección. Si vuelve a solicitar el acceso, usar contraseña y TOTP.
+
 CAPTCHA requiere configurar un proveedor y sus claves. La protección contra contraseñas filtradas requiere Pro y no se contrató. Mantenga protegido el autenticador y su mecanismo de recuperación; no elimine el último factor sin preparar recuperación administrativa.
 
 Para una instalación nueva, aplicar `antiacam-instalacion.sql` y después `seguridad-acceso.sql`. No publicar claves secretas ni service_role.
