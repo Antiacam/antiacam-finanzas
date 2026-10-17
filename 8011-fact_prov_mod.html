@@ -303,7 +303,7 @@
             <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" />
           </div>
           <div class="field-wrap autocomplete-wrap">
-            <label for="rnc_proveedor">RNC</label>
+            <label for="rnc_proveedor">RNC / Cédula</label>
             <input type="text" id="rnc_proveedor" maxlength="20" autocomplete="off" />
             <div id="listaRnc" class="autocomplete-lista"></div>
           </div>
@@ -463,7 +463,7 @@
 <script src="i02-auth.js?v=20261017-seguridad"></script>
 <script src="base_menu_lat.js?v=20261017-seguridad"></script>
 <script src="base_funcion.js"></script>
-<script src="proveedores.js?v=20261017-2"></script>
+<script src="proveedores.js?v=20261017-cedula"></script>
 
 <script>
 'use strict';
@@ -752,7 +752,7 @@ function obtenerFiltrosBusqueda() {
 }
 
 const SELECT_FIN10 = `
-  factura_prov_id, fecha_factura, numero_ncf, rnc_proveedor, nombre_proveedor,
+  factura_prov_id, fecha_factura, numero_ncf, rnc_proveedor, tipo_identificacion, nombre_proveedor,
   tipo_compra, forma_pago, gastado_por, tipo_solicitud,
   subtotal_servicios_locales, subtotal_bienes_locales, subtotal_bruto_factura,
   impuesto_selectivo_consumo, otros_impuestos_tasas, monto_propina_legal,
@@ -1239,6 +1239,7 @@ function filasFacturaProveedor(registros) {
     Fecha: item.fecha_factura,
     NCF: item.numero_ncf,
     RNC: item.rnc_proveedor,
+    'Tipo identificación': item.tipo_identificacion ?? Proveedores.tipoIdentificacion(item.rnc_proveedor) ?? '',
     Proveedor: item.nombre_proveedor,
     Vehículo: item.vehiculo || '',
 Proyecto: item.proyecto || '',

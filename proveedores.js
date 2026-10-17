@@ -1,6 +1,10 @@
 'use strict';
 window.Proveedores = (() => {
   const pendientes = new Map();
+  function tipoIdentificacion(documento) {
+    const valor = String(documento ?? '').trim();
+    return /^[0-9]{9}$/.test(valor) ? 1 : /^[0-9]{11}$/.test(valor) ? 2 : null;
+  }
   async function buscar(campo, texto, exacto = false) {
     const limpio = campo === 'rnc' ? String(texto).replace(/\D/g, '') : String(texto).trim();
     if (limpio.length < 2) return [];
@@ -50,7 +54,7 @@ window.Proveedores = (() => {
       agendar(campo, input.value, listaId, mostrar, 0);
     });
   }
-  return { buscar, agendar, configurarEnter };
+  return { buscar, agendar, configurarEnter, tipoIdentificacion };
 })();
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -67,14 +71,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   nombre.closest('.field-wrap').append(button);
   const dialog = document.createElement('dialog');
   dialog.className = 'proveedor-dialog'; dialog.setAttribute('aria-labelledby', 'proveedorTitulo');
-  dialog.innerHTML = '<form id="nuevoProveedorForm"><h2 id="proveedorTitulo">Crear proveedor</h2><label for="nuevoProveedorRnc">RNC (9 dígitos)</label><input id="nuevoProveedorRnc" inputmode="numeric" maxlength="9" pattern="[0-9]{9}" required autocomplete="off"><label for="nuevoProveedorNombre">Nombre o razón social</label><input id="nuevoProveedorNombre" maxlength="200" required autocomplete="off"><p id="nuevoProveedorError" role="alert"></p><div class="proveedor-acciones"><button type="button" id="cancelarNuevoProveedor">Cancelar</button><button type="submit" id="guardarNuevoProveedor">Guardar proveedor</button></div></form>';
+  dialog.innerHTML = '<form id="nuevoProveedorForm"><h2 id="proveedorTitulo">Crear proveedor</h2><label for="nuevoProveedorRnc">RNC (9 dígitos) o cédula (11 dígitos)</label><input id="nuevoProveedorRnc" inputmode="numeric" maxlength="11" pattern="(?:[0-9]{9}|[0-9]{11})" required autocomplete="off"><label for="nuevoProveedorNombre">Nombre o razón social</label><input id="nuevoProveedorNombre" maxlength="200" required autocomplete="off"><p id="nuevoProveedorError" role="alert"></p><div class="proveedor-acciones"><button type="button" id="cancelarNuevoProveedor">Cancelar</button><button type="submit" id="guardarNuevoProveedor">Guardar proveedor</button></div></form>';
   document.body.append(dialog);
   const rncInput = dialog.querySelector('#nuevoProveedorRnc');
   const nombreInput = dialog.querySelector('#nuevoProveedorNombre');
   const message = dialog.querySelector('#nuevoProveedorError');
   const save = dialog.querySelector('#guardarNuevoProveedor');
   button.addEventListener('click', () => {
-    rncInput.value = document.getElementById('rnc_proveedor').value.replace(/\D/g, '').slice(0, 9);
+    rncInput.value = document.getElementById('rnc_proveedor').value.replace(/\D/g, '').slice(0, 11);
     nombreInput.value = nombre.value.trim(); message.textContent = '';
     dialog.showModal(); rncInput.focus();
   });
@@ -82,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   dialog.querySelector('form').addEventListener('submit', async event => {
     event.preventDefault(); message.textContent = '';
     const rnc = rncInput.value.trim(), proveedor = nombreInput.value.trim();
-    if (!/^[0-9]{9}$/.test(rnc)) { message.textContent = 'Escriba un RNC de 9 dígitos.'; return; }
+    if (!Proveedores.tipoIdentificacion(rnc)) { message.textContent = 'Escriba un RNC de 9 dígitos o una cédula de 11, sin guiones.'; return; }
     if (!proveedor || proveedor.length > 200) { message.textContent = 'Escriba el nombre o razón social (máximo 200 caracteres).'; return; }
     save.disabled = true;
     try {
@@ -92,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       seleccionarProveedor(data); dialog.close();
     } catch (error) {
       message.textContent = error.code === '23505'
-        ? 'Este RNC ya existe. Cancele y búsquelo en el campo de proveedor.'
+        ? 'Este RNC o cédula ya existe. Cancele y búsquelo en el campo de proveedor.'
         : 'No se pudo crear el proveedor. ' + error.message;
     } finally { save.disabled = false; }
   });

@@ -32,3 +32,8 @@ El SQL está preparado para instalación inicial; no es una actualización de un
 La verificación en Supabase confirmó siete tablas con RLS, dos vistas con `security_invoker`, un usuario autorizado, dos permisos de formulario, dieciocho opciones iniciales y el bucket privado `facturas-proveedor`. El esquema `dev_v2` está habilitado en Data API. Las pruebas con el rol `authenticated` validaron lectura, inserción y actualización del usuario inicial, y bloqueo de usuarios sin alta; todos los datos de prueba se revirtieron. Una petición REST con la clave publicable, sin sesión, recibió HTTP 401. Security Advisor registró cero errores y una advertencia por protección contra contraseñas filtradas desactivada.
 
 Queda pendiente la prueba manual del inicio de sesión desde la app publicada con la contraseña del usuario existente, y la carga y descarga de un adjunto desde esa sesión. No se creó ni cambió ninguna contraseña.
+# Identificación de proveedores
+
+«Crear proveedor» admite RNC de 9 dígitos y cédula de 11, sin guiones. Ambos documentos se guardan como texto para conservar ceros iniciales. El campo calculado `tipo_identificacion` se mantiene automáticamente en proveedores y facturas: 1 = RNC; 2 = cédula. No aparece como control en pantalla y se incluye como «Tipo identificación» en el Excel de facturas.
+
+En instalaciones nuevas, aplicar también `proveedores-identificacion.sql` después de los otros scripts de instalación.

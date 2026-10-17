@@ -22,6 +22,15 @@ const secondInline=[...second.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].
 vm.runInContext(secondInline,secondContext);
 assert.equal(vm.runInContext('calcularTotalFactura()',secondContext),372);
 console.log('Pantalla de modificación: total correcto sin duplicar el subtotal.');
+vm.runInContext(fs.readFileSync('proveedores.js','utf8'),secondContext);
+secondContext.Proveedores=secondContext.window.Proveedores;
+const exportados=vm.runInContext("filasFacturaProveedor([{rnc_proveedor:'123456789',tipo_identificacion:1},{rnc_proveedor:'00112345678',tipo_identificacion:2},{rnc_proveedor:'00187654321'}])",secondContext);
+assert.equal(exportados[0]['Tipo identificación'],1);
+assert.equal(exportados[1]['Tipo identificación'],2);
+assert.equal(exportados[2]['Tipo identificación'],2);
+assert.equal(exportados[1].RNC,'00112345678');
+assert.equal(typeof exportados[1].RNC,'string');
+console.log('Excel: clasificación 1/2 y cédula con ceros iniciales correctas.');
 
 // Reproduce la carga inicial para detectar funciones ausentes antes de publicar.
 (async () => {
