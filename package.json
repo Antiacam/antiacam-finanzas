@@ -3,5 +3,5 @@
   "version": "1.0.0",
   "private": true,
   "description": "Antiacam · Finanzas y facturas de proveedores",
-  "scripts": { "check": "node checks/check.cjs && node checks/functional.cjs && node checks/auth.cjs && node checks/proveedores.cjs" }
+  "scripts": { "check": "node checks/check.cjs && node checks/functional.cjs && node checks/auth.cjs && node checks/proveedores.cjs && node checks/seguridad.cjs" }
 }

@@ -19,9 +19,9 @@ window.authReady = (async () => {
     if (!user) { window.volverAlAcceso(); return false; }
     const assurance = await window.sb.auth.mfa.getAuthenticatorAssuranceLevel();
     if (assurance.error) throw assurance.error;
-    if (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
-      throw new Error('Se requiere segundo factor para acceder.');
-    }
+    const acceso = await window.sb.schema(window.APP_SCHEMA).rpc('fn_acceso_seguro');
+    if (acceso.error) throw acceso.error;
+    if (!acceso.data) { location.replace('seguridad.html'); return false; }
     const {data,error} = await DB.tabla('app_sys_usuario').select('usuario_id,nombre,correo,activo,eliminado').eq('usuario_id',user.id).single();
     if (error) throw error;
     if (!data.activo || data.eliminado) throw new Error('Usuario sin acceso activo a Antiacam.');
@@ -63,9 +63,10 @@ const revalidarSesion = async () => {
     const permissions = await DB.tabla('app_sys_usuario_permiso_formulario').select('formulario_id,puede_select').eq('usuario_id',user.id).eq('activo',true).eq('eliminado',false);
     const forms = await DB.tabla('mt_cfg_modulo_formulario').select('formulario_id,formulario_codigo').eq('activo',true).eq('eliminado',false);
     const assurance = await window.sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    const acceso = await window.sb.schema(window.APP_SCHEMA).rpc('fn_acceso_seguro');
     const code = window.APP_RUTAS[location.pathname.split('/').pop()];
     if (profile.error || permissions.error || forms.error || assurance.error || !profile.data.activo || profile.data.eliminado ||
-        (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') ||
+        acceso.error || !acceso.data ||
         !forms.data.some(form => form.formulario_codigo === code && permissions.data.some(permission => permission.formulario_id === form.formulario_id && permission.puede_select))) {
       window.volverAlAcceso(); return;
     }

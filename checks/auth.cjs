@@ -13,7 +13,7 @@ async function run({user = {id:'u1'}, allowed = true, mfa = false} = {}) {
     document:{body:{classList:{add(){ready=true},remove(){ready=false}},replaceChildren(){},append(){}},createElement:()=>({...panel}),addEventListener(){}},
     obtenerUsuarioActualBase:async()=>user,
     DB:{tabla(name){const result = tables[name]; const query={select(){return query},eq(){return query},single:async()=>result,then(resolve){resolve(result)}};return query}},
-    window:{addEventListener(){},sb:{auth:{onAuthStateChange(cb){authCallback=cb},mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{nextLevel:mfa?'aal2':'aal1',currentLevel:'aal1'}})}}}}
+    window:{addEventListener(){},sb:{schema(){return {rpc:async()=>({data:!mfa})}},auth:{onAuthStateChange(cb){authCallback=cb},mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{nextLevel:mfa?'aal2':'aal1',currentLevel:'aal1'}})}}}}
   };
   vm.runInNewContext(source,ctx);
   const ok = await ctx.window.authReady;

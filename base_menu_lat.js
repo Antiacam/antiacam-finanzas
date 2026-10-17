@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   nav.querySelectorAll('a').forEach(link => {
     if (!window.APP_FORMULARIOS.includes(window.APP_RUTAS[link.getAttribute('href')])) link.remove();
   });
+  const seguridad = document.createElement('a'); seguridad.href='seguridad.html'; seguridad.textContent='Seguridad y equipos';
+  nav.insertBefore(seguridad,nav.querySelector('button'));
+  const clave = document.createElement('a'); clave.href='cambiar-clave.html'; clave.textContent='Cambiar contraseña';
+  nav.insertBefore(clave,nav.querySelector('button'));
   nav.querySelector('button').addEventListener('click', async () => {
     const {error} = await window.sb.auth.signOut();
     if (error) { alert(error.message); return; }
