@@ -168,6 +168,7 @@
     </div>
     <div class="topbar-acciones">
       <button type="button" class="btn-mini" id="btnDescargarExcel">⬇ Excel general</button>
+      <button type="button" class="btn-mini" id="btnExcelDGII">⬇ Excel DGII</button>
     </div>
   </div>
 
@@ -316,7 +317,7 @@
 
         <div class="form-row cols-4">
           <div class="field-wrap">
-            <label for="tipo_compra">Tipo de compra / 606</label>
+            <label for="tipo_compra">Tipo de bienes y servicios / 606</label>
             <select id="tipo_compra">
               <option value="">— Seleccione —</option>
               <option value="COMPRA MATERIALES">Compra de materiales</option>
@@ -414,6 +415,7 @@
             </select>
           </div>
         </div>
+<section class="section-card" id="datosDGII606"><div class="section-title">Datos complementarios · 606 DGII</div><div class="form-row cols-4"><div class="field-wrap"><label for="ncf_modificado">NCF o documento modificado</label><input id="ncf_modificado" maxlength="20" autocomplete="off"></div><div class="field-wrap"><label for="fecha_pago">Fecha de pago</label><input id="fecha_pago" type="date"></div><div class="field-wrap"><label for="tipo_retencion_isr">17 · Tipo de retención en ISR</label><select id="tipo_retencion_isr"><option value="">— Sin retención —</option></select></div></div><div class="form-row cols-4"><div class="field-wrap"><label for="itbis_retenido">ITBIS retenido</label><input id="itbis_retenido" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_proporcionalidad">ITBIS sujeto a proporcionalidad (Art. 349)</label><input id="itbis_proporcionalidad" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_costo">ITBIS llevado al costo</label><input id="itbis_costo" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_adelantar">ITBIS por adelantar</label><input id="itbis_adelantar" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_percibido">ITBIS percibido en compras</label><input id="itbis_percibido" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="retencion_renta">Monto retención renta</label><input id="retencion_renta" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="isr_percibido">ISR percibido en compras</label><input id="isr_percibido" type="number" step="0.01" min="0"></div></div></section>
       </form>
       <div id="mensajeFormulario" class="mensaje"></div>
         </div>
@@ -464,6 +466,7 @@
 <script src="base_menu_lat.js?v=20261017-seguridad"></script>
 <script src="base_funcion.js"></script>
 <script src="proveedores.js?v=20261017-cedula"></script>
+<script src="dgii606.js?v=20261017-dgii"></script>
 
 <script>
 'use strict';
@@ -584,7 +587,7 @@ function calcularTotalFactura() {
 // CATÁLOGO GASTADO_POR (mt_cat_opcion — igual que 8010)
 // ============================================================
 async function cargarCatalogos() {
-  for (const [id,codigo] of [['tipo_compra','TIPO_COMPRA'],['forma_pago','FORMA_PAGO'],['gastado_por','GASTADO_POR'],['tipo_solicitud','TIPO_SOLICITUD']]) {
+  for (const [id,codigo] of [['tipo_compra','TIPO_COMPRA'],['forma_pago','FORMA_PAGO'],['gastado_por','GASTADO_POR'],['tipo_solicitud','TIPO_SOLICITUD'],['tipo_retencion_isr','TIPO_RETENCION_ISR']]) {
     await cargarCatalogo({schema:SCHEMA,selectId:id,formularioCodigo:FORMULARIO_CODIGO,catalogoCodigo:codigo,valor:'valor',texto:'opcion_nombre'});
   }
 }
@@ -667,6 +670,7 @@ function manejarInputRnc(e) {
 // ============================================================
 function obtenerPayloadFormulario() {
   return {
+    ...DGII606.leer(),
     fecha_factura: valorTexto('fecha_factura'),
     numero_ncf: valorTexto('numero_ncf'),
     rnc_proveedor: valorTexto('rnc_proveedor'),
@@ -752,6 +756,7 @@ function obtenerFiltrosBusqueda() {
 }
 
 const SELECT_FIN10 = `
+  ncf_modificado, fecha_pago, tipo_retencion_isr, itbis_retenido, itbis_proporcionalidad, itbis_costo, itbis_adelantar, itbis_percibido, retencion_renta, isr_percibido,
   factura_prov_id, fecha_factura, numero_ncf, rnc_proveedor, tipo_identificacion, nombre_proveedor,
   tipo_compra, forma_pago, gastado_por, tipo_solicitud,
   subtotal_servicios_locales, subtotal_bienes_locales, subtotal_bruto_factura,
@@ -1091,6 +1096,7 @@ function cargarRegistroEnFormulario(id) {
   Estado.proveedorId = r.proveedor_id || null;
 
   setValor(CAMPO_ID, r[CAMPO_ID] || '');
+  DGII606.cargar(r);
   setValor('fecha_factura', r.fecha_factura || '');
   setValor('numero_ncf', r.numero_ncf || '');
   setValor('rnc_proveedor', r.rnc_proveedor || '');
@@ -1290,6 +1296,27 @@ async function descargarExcelFiltrado() {
   }
 }
 
+async function descargarExcelDGII() {
+  const boton=obtenerElemento('btnExcelDGII');boton.disabled=true;
+  try {
+    msgBusqueda('Preparando Excel DGII...', 'info');
+    const filtros=obtenerFiltrosBusqueda(),todos=[];
+    for(let desde=0;;desde+=1000) {
+      let q=DB.tabla(TABLA_FIN10).select(SELECT_FIN10).eq('activo',true).eq('eliminado',false).order(CAMPO_ID,{ascending:false}).range(desde,desde+999);
+      if(filtros.fechaDesde)q=q.gte('fecha_factura',filtros.fechaDesde);
+      if(filtros.fechaHasta)q=q.lte('fecha_factura',filtros.fechaHasta);
+      const {data,error}=await q;if(error)throw error;
+      todos.push(...(data||[]));if((data||[]).length<1000)break;
+    }
+    const filas=aplicarFiltrosLocales(todos,{...filtros,incompleto:false});
+    if(!filas.length)throw new Error('No hay datos para descargar con el filtro actual.');
+    const libro=DGII606.libro(filas,XLSX);
+    XLSX.writeFile(libro,generarNombreArchivo('606_DGII'));
+    msgBusqueda('Excel DGII generado. Registros exportados: '+filas.length+'.','ok');
+  }catch(error){msgBusqueda(error.message||'No se pudo generar el Excel DGII.','error',true);}
+  finally{boton.disabled=false;}
+}
+
 function obtenerRegistrosPantallaFiltrados() {
   const filtrados = _resultadosFiltrados.length
     ? _resultadosFiltrados
@@ -1310,6 +1337,7 @@ async function inicializarPantalla() {
     onClick('btnBuscarRegistros', buscarRegistros);
     onClick('btnLimpiarBusqueda', limpiarBusqueda);
     onClick('btnDescargarExcel', descargarExcelFiltrado);
+    onClick('btnExcelDGII', descargarExcelDGII);
     onClick('btnCerrarImagen', cerrarVistaImagen);
     onClick('btnAbrirImagenGrande', () => {
       if (!_rutaImagenEdicionActual) return;

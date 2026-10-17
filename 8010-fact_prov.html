@@ -226,7 +226,7 @@
         <div class="form-row row-prov-1">
           <div class="field-wrap"><label for="rnc_proveedor">RNC / Cédula <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="rnc_proveedor" maxlength="15" autocomplete="off" placeholder="RNC o cédula del proveedor" /><div id="listaRnc" class="autocomplete-lista"></div></div></div>
           <div class="field-wrap"><label for="nombre_proveedor">Nombre proveedor <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="nombre_proveedor" maxlength="70" autocomplete="off" placeholder="Buscar o escribir proveedor" title="Si no existe, escríbalo directamente." /><div id="listaProveedor" class="autocomplete-lista"></div></div></div>
-          <div class="field-wrap"><label for="tipo_compra">Tipo de compra / 606 <span style="color:var(--color-danger)">*</span></label><select id="tipo_compra"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="tipo_compra">Tipo de bienes y servicios / 606 <span style="color:var(--color-danger)">*</span></label><select id="tipo_compra"><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap"><label for="tipo_solicitud">Tipo solicitud</label><select id="tipo_solicitud"><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap" id="wrapMontoEcf" style="display:none;"><label for="monto_ecf_visible">Monto eCF</label><input type="number" id="monto_ecf_visible" step="0.01" readonly style="background:#f1f5f9;color:#0e7490;font-weight:700;" /></div>
         </div>
@@ -258,6 +258,7 @@
         </div>
       </div>
 
+<section class="section-card" id="datosDGII606"><div class="section-title">Datos complementarios · 606 DGII</div><div class="form-row cols-4"><div class="field-wrap"><label for="ncf_modificado">NCF o documento modificado</label><input id="ncf_modificado" maxlength="20" autocomplete="off"></div><div class="field-wrap"><label for="fecha_pago">Fecha de pago</label><input id="fecha_pago" type="date"></div><div class="field-wrap"><label for="tipo_retencion_isr">17 · Tipo de retención en ISR</label><select id="tipo_retencion_isr"><option value="">— Sin retención —</option></select></div></div><div class="form-row cols-4"><div class="field-wrap"><label for="itbis_retenido">ITBIS retenido</label><input id="itbis_retenido" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_proporcionalidad">ITBIS sujeto a proporcionalidad (Art. 349)</label><input id="itbis_proporcionalidad" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_costo">ITBIS llevado al costo</label><input id="itbis_costo" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_adelantar">ITBIS por adelantar</label><input id="itbis_adelantar" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="itbis_percibido">ITBIS percibido en compras</label><input id="itbis_percibido" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="retencion_renta">Monto retención renta</label><input id="retencion_renta" type="number" step="0.01" min="0"></div><div class="field-wrap"><label for="isr_percibido">ISR percibido en compras</label><input id="isr_percibido" type="number" step="0.01" min="0"></div></div></section>
       <div class="section-card">
         <div class="field-wrap"><label for="observacion">Observación</label><textarea id="observacion" style="min-height:64px;"></textarea></div>
       </div>
@@ -332,6 +333,7 @@
 <script src="base_menu_lat.js?v=20261017-seguridad"></script>
 <script src="base_funcion.js"></script>
 <script src="proveedores.js?v=20261017-cedula"></script>
+<script src="dgii606.js?v=20261017-dgii"></script>
 
 <script>
 'use strict';
@@ -902,6 +904,7 @@ function validarFormulario() {
 
 function construirCabecera() {
   return {
+    ...DGII606.leer(),
     factura_prov_id: Estado.idActual,
     proveedor_id: Estado.proveedorId || null,
     rnc_proveedor: getValor('rnc_proveedor'),
@@ -1020,6 +1023,7 @@ const reg = await obtenerRegistro(VISTA_FORM, {
   Estado.facturaPagada = await validarFacturaTienePago(reg.factura_prov_id);
 
   setValor('factura_prov_id', reg.factura_prov_id);
+  DGII606.cargar(reg);
   setValor('numero_ncf', reg.numero_ncf);
   setValor('fecha_factura', reg.fecha_factura);
   setValor('fecha_vencimiento', reg.fecha_vencimiento);
@@ -1312,6 +1316,7 @@ async function cargarCatalogosFormulario() {
       valor: 'valor',
       texto: 'opcion_nombre'
     }),
+    cargarCatalogo({schema:SCHEMA,selectId:'tipo_retencion_isr',formularioCodigo:FORM_CODIGO,catalogoCodigo:'TIPO_RETENCION_ISR',valor:'valor',texto:'opcion_nombre'}),
     cargarProyectosFormulario()
   ]);
 }

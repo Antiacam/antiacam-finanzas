@@ -37,3 +37,12 @@ Queda pendiente la prueba manual del inicio de sesión desde la app publicada co
 «Crear proveedor» admite RNC de 9 dígitos y cédula de 11, sin guiones. Ambos documentos se guardan como texto para conservar ceros iniciales. El campo calculado `tipo_identificacion` se mantiene automáticamente en proveedores y facturas: 1 = RNC; 2 = cédula. No aparece como control en pantalla y se incluye como «Tipo identificación» en el Excel de facturas.
 
 En instalaciones nuevas, aplicar también `proveedores-identificacion.sql` después de los otros scripts de instalación.
+# Excel DGII 606
+
+En «Consultar y modificar», el botón **Excel DGII** genera un archivo independiente. **Excel general** conserva su estructura anterior. El nuevo archivo sigue el orden de la plantilla facilitada: 23 conceptos DGII en 25 columnas de datos (cada fecha se divide en año-mes y día), con la columna de líneas al inicio y estatus al final. RNC y cédula se conservan como texto.
+
+Las listas de la maestra `mt_cat_opcion` son `TIPO_COMPRA` (01–11), `TIPO_RETENCION_ISR` (00–09) y `FORMA_PAGO` (01–07). Las opciones anteriores se desactivan, sin borrarlas ni reclasificar facturas históricas automáticamente. Los valores históricos siguen visibles al editar; el Excel DGII exige clasificarlos con un código válido. Las formas antiguas inequívocas Efectivo, Cheque/Transferencia y Tarjeta se convierten a sus códigos al exportar.
+
+«Datos complementarios · 606 DGII» permite registrar fecha de pago, NCF modificado, retenciones y demás montos del formato. Los montos no capturados quedan vacíos; no se presume ITBIS por adelantar ni retenciones. El tipo ISR 00 representa ausencia de retención. La exportación señala la factura si faltan códigos o fechas de pago necesarias para retenciones.
+
+Aplicar `dgii606-configuracion.sql` después de los demás scripts para instalar campos, catálogos y actualizar la función de registro. No copia las macros de la plantilla ni sustituye su validación oficial.
