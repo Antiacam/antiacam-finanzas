@@ -1,0 +1,3 @@
+body:not(.app-ready) .main { visibility:hidden; }
+.antiacam-nav{display:flex;align-items:center;gap:22px;background:#102a43;color:white;padding:16px 28px;font:14px Arial,sans-serif;flex-wrap:wrap}
+.antiacam-nav strong{font-size:22px}.antiacam-nav span{opacity:.7}.antiacam-nav a{color:#dbeafe;text-decoration:none}.antiacam-nav button{margin-left:auto;background:transparent;border:1px solid #829ab1;color:white;border-radius:6px;padding:7px 12px;cursor:pointer}

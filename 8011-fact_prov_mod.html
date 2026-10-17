@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antiacam · Finanzas</title>
+  <link rel="stylesheet" href="base_estilo.css" />
+  <link rel="stylesheet" href="base_menu_lat.css" />
+  <style>
+    :root {
+      --color-primary: #1e3a8a;
+      --color-primary2: #2563eb;
+      --color-ice: #eff6ff;
+      --color-border: #dde6f5;
+      --color-text: #0f172a;
+      --color-muted: #64748b;
+      --color-bg: #f0f5ff;
+      --color-white: #ffffff;
+      --color-danger: #dc2626;
+      --color-success: #16a34a;
+      --color-warn: #d97706;
+    }
+
+    body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: Arial, sans-serif; }
+    .main { min-height: 100vh; }
+
+    .topbar { background: var(--color-white); border-bottom: 1px solid var(--color-border); min-height: 58px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 6px rgba(30,58,138,.06); position: sticky; top: 0; z-index: 100; gap: 16px; }
+    .topbar-left { display: flex; flex-direction: column; justify-content: center; }
+    .topbar-breadcrumb { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-muted); }
+    .topbar-breadcrumb a { color: var(--color-primary2); text-decoration: none; font-weight: 500; }
+    .topbar-title { font-weight: 700; font-size: 15px; color: var(--color-primary); margin-top: 2px; }
+    .topbar-acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .page-content { padding: 22px 28px 150px; display: flex; flex-direction: column; gap: 14px; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .page-title { font-size: 18px; font-weight: 700; color: var(--color-primary); }
+    .page-sub { font-size: 12.5px; color: var(--color-muted); margin-top: 4px; }
+    .page-badge { font-size: 10.5px; padding: 3px 10px; border-radius: 20px; background: var(--color-ice); color: var(--color-primary2); border: 1px solid #bfdbfe; white-space: nowrap; flex-shrink: 0; margin-top: 4px; }
+
+    .section-card { background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted); margin-bottom: 14px; }
+
+    .form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .form-row.cols-busqueda { grid-template-columns: 2fr 1fr 1fr 1fr auto 1.25fr; align-items: end; }
+    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; font-weight: 600; color: #334155; }
+    .field-hint { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+
+    input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 13px; background: var(--color-white); color: var(--color-text); outline: none; font-family: inherit; box-sizing: border-box; }
+    input:focus, select:focus, textarea:focus { border-color: var(--color-primary2); background: var(--color-ice); }
+    input:disabled, select:disabled { background: #f1f5f9; color: #475569; cursor: not-allowed; border-color: #e2e8f0; }
+    input[readonly] { background: #f8fafc; color: #334155; }
+
+    .check-campo { display: flex; align-items: center; gap: 6px; height: 36px; border: 1px solid #cbd5e1; border-radius: 7px; padding: 6px 10px; background: var(--color-white); box-sizing: border-box; }
+    .check-campo input { width: auto; margin: 0; }
+    .check-campo span { font-size: 12px; color: #334155; }
+
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-lista { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 8px; box-shadow: 0 6px 20px rgba(30,58,138,.12); z-index: 60; max-height: 220px; overflow-y: auto; display: none; }
+    .autocomplete-lista.visible { display: block; }
+    .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 12.5px; border-bottom: 1px solid #f1f5f9; }
+    .autocomplete-item:hover { background: var(--color-ice); }
+    .autocomplete-item .item-rnc { font-size: 11px; color: var(--color-muted); }
+
+    .badges-resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; background: var(--color-ice); color: var(--color-primary2); border: 1px solid #bfdbfe; }
+
+    .tabla-wrap { overflow: auto; max-height: 60vh; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-white); }
+    .tabla-gastos { width: 100%; border-collapse: collapse; min-width: 2100px; font-size: 12px; }
+    .tabla-gastos thead th { background: var(--color-ice); color: var(--color-primary); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 8px; border-bottom: 2px solid var(--color-border); text-align: left; white-space: nowrap; position: sticky; top: 0; z-index: 5; }
+    .tabla-gastos td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f8fafc; vertical-align: middle; white-space: nowrap; }
+    .tabla-gastos tr:hover td { background: #f8fbff; }
+    .col-id { font-weight: 700; color: var(--color-primary); }
+    .col-total { text-align: right; font-weight: 700; color: var(--color-primary); }
+
+    .editable-linea { width: 100%; min-width: 90px; padding: 5px 7px; border: 1px solid transparent; border-radius: 5px; background: transparent; font-size: 12px; box-sizing: border-box; }
+    .editable-linea:hover, .editable-linea:focus { border-color: #93c5fd; background: var(--color-white); }
+    .editable-linea.numero { text-align: right; min-width: 100px; }
+    .editable-linea.guardando { background: #fff7da !important; border-color: #facc15; }
+    .editable-linea.ok { background: #dcfce7 !important; border-color: #86efac; }
+    .editable-linea.error { background: #fee2e2 !important; border-color: #fca5a5; }
+
+    .btn-mini { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: var(--color-ice); color: var(--color-primary2); border: 1px solid #bfdbfe; }
+    .btn-mini:hover { background: #dbeafe; }
+    .btn-mini.btn-verde { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+    .btn-mini.btn-verde:hover { background: #dcfce7; }
+    .btn-cuadro {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      padding: 0;
+      justify-content: center;
+      gap: 0;
+      font-size: 10px;
+      font-weight: 800;
+      border-radius: 5px;
+    }
+    .btn-cuadro:disabled { opacity: .35; cursor: not-allowed; background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+    .col-accion-mini { width: 34px; min-width: 34px; text-align: center !important; }
+
+    .modal-imagen-fondo { position: fixed; inset: 0; background: rgba(15,23,42,.72); display: none; align-items: center; justify-content: center; z-index: 999999; padding: 20px; }
+    .modal-imagen { width: min(1000px, 96vw); max-height: 94vh; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,.35); display: flex; flex-direction: column; }
+    .modal-imagen-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--color-border); }
+    .modal-imagen-cabecera strong { color: var(--color-primary); font-size: 13px; }
+    .modal-imagen-cuerpo { padding: 12px; overflow: auto; text-align: center; background: #f8fafc; }
+    .modal-imagen-cuerpo img { max-width: 100%; max-height: 78vh; object-fit: contain; border-radius: 6px; }
+
+    .edicion-box { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; background: var(--color-ice); border: 1px solid #bfdbfe; color: var(--color-primary2); font-size: 12.5px; font-weight: 600; display: none; }
+
+    .edicion-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 1fr); gap: 16px; align-items: stretch; }
+    .edicion-form-panel { min-width: 0; }
+    .edicion-imagen-panel { min-width: 0; border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; background: #f8fafc; display: flex; flex-direction: column; min-height: 610px; position: sticky; top: 76px; align-self: start; }
+    .edicion-imagen-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--color-ice); border-bottom: 1px solid var(--color-border); color: var(--color-primary); font-size: 12px; font-weight: 700; }
+    .edicion-imagen-cuerpo { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; overflow: auto; min-height: 540px; }
+    .edicion-imagen-cuerpo img { display: none; max-width: 100%; max-height: 72vh; object-fit: contain; border-radius: 6px; box-shadow: 0 2px 10px rgba(15,23,42,.12); background: #fff; }
+    .edicion-imagen-vacia { max-width: 310px; text-align: center; color: var(--color-muted); font-size: 12.5px; line-height: 1.5; }
+    .edicion-imagen-acciones { display: flex; gap: 6px; align-items: center; }
+
+    .edicion-layout .form-row.cols-4 { grid-template-columns: 1fr 1fr; }
+
+    @media (max-width: 1180px) {
+      .edicion-layout { grid-template-columns: 1fr; }
+      .edicion-imagen-panel { position: static; min-height: 420px; }
+      .edicion-imagen-cuerpo { min-height: 350px; }
+    }
+
+    .form-actions { position: fixed; bottom: 0; left: var(--sidebar-w, 252px); right: 0; background: var(--color-white); border-top: 1px solid var(--color-border); padding: 12px 28px; display: flex; align-items: center; gap: 10px; z-index: 90; box-shadow: 0 -2px 10px rgba(30,58,138,.06); transition: left .3s; }
+    .main.sb-collapsed .form-actions { left: var(--sidebar-c, 66px); }
+    .btn-form { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-save { background: var(--color-primary2); color: #fff; }
+    .btn-save:hover { background: var(--color-primary); }
+    .btn-cancel { background: #f1f5f9; color: #475569; }
+    .btn-cancel:hover { background: #e2e8f0; }
+
+    .mensaje { padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; margin-top: 12px; }
+    .mensaje.info { display: block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .mensaje.ok { display: block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .mensaje.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .modal-link-fondo { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none; align-items: center; justify-content: center; z-index: 99999; padding: 18px; }
+    .modal-link { width: min(720px, 100%); background: var(--color-white); border-radius: 14px; box-shadow: 0 18px 48px rgba(15,23,42,.24); padding: 20px; border: 1px solid var(--color-border); }
+    .modal-link h3 { margin: 0 0 8px; font-size: 17px; color: var(--color-primary); }
+    .modal-link p { margin: 0 0 12px; color: var(--color-muted); font-size: 13px; line-height: 1.5; }
+    .modal-link input { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--color-text); background: #f8fafc; box-sizing: border-box; }
+    .modal-link-acciones { margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+    .swal-sobre-modal { z-index: 999999 !important; }
+
+    @media (max-width: 900px) {
+      .form-row.cols-2, .form-row.cols-3, .form-row.cols-4, .form-row.cols-busqueda { grid-template-columns: 1fr; }
+      .page-content { padding: 14px 14px 160px; }
+      .topbar { padding: 0 14px; flex-wrap: wrap; }
+      .form-actions { left: var(--sidebar-c, 66px); padding: 10px 14px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<main class="main" id="mainContent">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-breadcrumb"><a href="8010-fact_prov.html">Inicio</a> › <span>Finanzas</span> › <span>Factura Proveedor — Modificar</span></div>
+      <div class="topbar-title">Factura Proveedor — Consulta y Modificación</div>
+    </div>
+    <div class="topbar-acciones">
+      <button type="button" class="btn-mini" id="btnDescargarExcel">⬇ Excel general</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Factura Proveedor — Modificar</div>
+        <div class="page-sub">Consulta, clasificación 606, modificación en línea y exportación filtrada de facturas de proveedor. El registro de nuevas facturas se realiza en la pantalla 8010.</div>
+      </div>
+    <!-- <span class="page-badge">t_opr_fin10_factura_proveedor</span>-->
+    </div>
+
+    <!-- ============================================================
+         BÚSQUEDA Y RESULTADOS
+    ============================================================= -->
+    <section class="section-card">
+      <div class="section-title">Búsqueda de registros</div>
+
+      <div class="form-row cols-busqueda">
+        <div class="field-wrap">
+          <label for="filtroGeneral">Proveedor, RNC o NCF</label>
+          <input type="text" id="filtroGeneral" placeholder="Ej.: González, 101..., B010..." autocomplete="off" />
+        </div>
+        <div class="field-wrap">
+          <label for="filtroGastadoPor">Gastado por</label>
+          <input type="text" id="filtroGastadoPor" placeholder="Nombre" autocomplete="off" />
+        </div>
+        <div class="field-wrap">
+          <label for="filtroFechaDesde">Fecha desde</label>
+          <input type="date" id="filtroFechaDesde" />
+        </div>
+        <div class="field-wrap">
+          <label for="filtroFechaHasta">Fecha hasta</label>
+          <input type="date" id="filtroFechaHasta" />
+        </div>
+        <div class="field-wrap">
+          <label>Incompleto</label>
+          <div class="check-campo">
+            <input type="checkbox" id="filtroIncompleto" />
+            <span>Solo pendientes</span>
+          </div>
+        </div>
+        <div class="field-wrap">
+          <label for="ordenResultados">Ordenar por</label>
+          <select id="ordenResultados">
+            <option value="id_desc">N.º registro: mayor a menor</option>
+            <option value="id_asc">N.º registro: menor a mayor</option>
+            <option value="fecha_desc">Fecha: más reciente</option>
+            <option value="fecha_asc">Fecha: más antigua</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <button type="button" class="btn-form btn-save" id="btnBuscarRegistros" style="padding:8px 14px;font-size:12.5px;">Buscar registros</button>
+        <button type="button" class="btn-form btn-cancel" id="btnLimpiarBusqueda" style="padding:8px 14px;font-size:12.5px;">Limpiar búsqueda</button>
+      </div>
+
+      <div class="badges-resumen">
+        <span class="badge" id="badgeCantidad">0 registros</span>
+        <span class="badge" id="badgeMonto">Monto total: 0.00</span>
+      </div>
+
+      <div class="tabla-wrap">
+        <table class="tabla-gastos">
+          <thead>
+            <tr>
+              <th class="col-accion-mini" title="Imagen adjunta">Img</th>
+              <th class="col-accion-mini" title="Editar registro">E</th>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>RNC</th>
+              <th>NCF</th>
+              <th>Tipo compra / 606</th>
+              <th>Forma pago</th>
+              <th>Gastado por</th>
+              <th>Tipo solicitud</th>
+              <th>Servicios locales</th>
+              <th>Bienes locales</th>
+              <th>Subtotal bruto</th>
+              <th>ISC</th>
+              <th>Otros impuestos/tasas</th>
+              <th>Propina legal</th>
+              <th>ITBIS servicios</th>
+              <th>ITBIS bienes</th>
+              <th>ITBIS total</th>
+              <th>Total factura</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyResultadosBusqueda">
+            <tr><td colspan="22">No hay registros cargados.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="mensajeBusqueda" class="mensaje"></div>
+    </section>
+
+    <div class="modal-imagen-fondo" id="modalImagenFondo" aria-hidden="true">
+      <div class="modal-imagen">
+        <div class="modal-imagen-cabecera">
+          <strong id="modalImagenTitulo">Imagen adjunta</strong>
+          <button type="button" class="btn-mini btn-cuadro" id="btnCerrarImagen" title="Cerrar">×</button>
+        </div>
+        <div class="modal-imagen-cuerpo">
+          <img id="imgAdjuntoVista" alt="Imagen adjunta de factura" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         FORMULARIO REGISTRO / MODIFICACIÓN
+    ============================================================= -->
+    <section class="section-card">
+      <div class="section-title">Formulario de modificación</div>
+
+      <div id="edicionBox" class="edicion-box"></div>
+
+      <div class="edicion-layout">
+        <div class="edicion-form-panel">
+      <form id="formGasto" onsubmit="return false;">
+        <input type="hidden" id="factura_prov_id" />
+
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="fecha_factura">Fecha *</label>
+            <input type="date" id="fecha_factura" required />
+          </div>
+          <div class="field-wrap">
+            <label for="numero_ncf">NCF</label>
+            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" />
+          </div>
+          <div class="field-wrap autocomplete-wrap">
+            <label for="rnc_proveedor">RNC</label>
+            <input type="text" id="rnc_proveedor" maxlength="20" autocomplete="off" />
+            <div id="listaRnc" class="autocomplete-lista"></div>
+          </div>
+          <div class="field-wrap autocomplete-wrap">
+            <label for="nombre_proveedor">Proveedor *</label>
+            <input type="text" id="nombre_proveedor" maxlength="200" autocomplete="off" required />
+            <div id="listaProveedor" class="autocomplete-lista"></div>
+          </div>
+        </div>
+
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="tipo_compra">Tipo de compra / 606</label>
+            <select id="tipo_compra">
+              <option value="">— Seleccione —</option>
+              <option value="COMPRA MATERIALES">Compra de materiales</option>
+              <option value="COMPRA EQUIPO">Compra de equipo</option>
+              <option value="COMBUSTIBLE">Combustible</option>
+              <option value="GAS TRABAJO">Gas trabajo</option>
+              <option value="SERVICIO">Servicio</option>
+              <option value="COMIDA">Comida</option>
+              <option value="PEAJE">Peaje</option>
+              <option value="VEHICULO MANTENIMIENTO">Mantenimiento vehículo</option>
+              <option value="PAGO PRESTAMO">Pago préstamo</option>
+              <option value="SERVICIO TELEFONICO">Servicio telefónico</option>
+              <option value="SERVICIO INTERNET">Servicio internet</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+          <div class="field-wrap">
+            <label for="forma_pago">Forma de pago</label>
+            <select id="forma_pago">
+              <option value="">— Seleccione —</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+              <option value="CHEQUE">Cheque</option>
+            </select>
+          </div>
+          <div class="field-wrap">
+            <label for="gastado_por">Gastado por</label>
+            <select id="gastado_por"><option value="">— Seleccione —</option></select>
+          </div>
+          <div class="field-wrap">
+            <label for="tipo_solicitud">Tipo de solicitud</label>
+            <select id="tipo_solicitud">
+              <option value="">— Seleccione —</option>
+              <option value="DESEMBOLSO">Desembolso</option>
+              <option value="REEMBOLSO">Reembolso</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="subtotal_servicios_locales">Servicios locales</label>
+            <input type="number" step="0.01" id="subtotal_servicios_locales" />
+          </div>
+          <div class="field-wrap">
+            <label for="subtotal_bienes_locales">Bienes locales</label>
+            <input type="number" step="0.01" id="subtotal_bienes_locales" />
+          </div>
+          <div class="field-wrap">
+            <label for="subtotal_bruto_factura">Subtotal bruto</label>
+            <input type="number" step="0.01" id="subtotal_bruto_factura" />
+          </div>
+          <div class="field-wrap">
+            <label for="impuesto_selectivo_consumo">ISC</label>
+            <input type="number" step="0.01" id="impuesto_selectivo_consumo" />
+          </div>
+        </div>
+
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="otros_impuestos_tasas">Otros impuestos/tasas</label>
+            <input type="number" step="0.01" id="otros_impuestos_tasas" />
+          </div>
+          <div class="field-wrap">
+            <label for="monto_propina_legal">Propina legal</label>
+            <input type="number" step="0.01" id="monto_propina_legal" />
+          </div>
+          <div class="field-wrap">
+            <label for="itbis_servicios_locales">ITBIS servicios</label>
+            <input type="number" step="0.01" id="itbis_servicios_locales" />
+          </div>
+          <div class="field-wrap">
+            <label for="itbis_bienes_locales">ITBIS bienes</label>
+            <input type="number" step="0.01" id="itbis_bienes_locales" />
+          </div>
+        </div>
+
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="itbis_total">ITBIS total</label>
+            <input type="number" step="0.01" id="itbis_total" readonly />
+            <div class="field-hint">Calculado: ITBIS servicios + ITBIS bienes.</div>
+          </div>
+          <div class="field-wrap">
+            <label for="total_factura">Total factura</label>
+            <input type="number" step="0.01" id="total_factura" readonly />
+            <div class="field-hint">Calculado: montos base + ITBIS total.</div>
+          </div>
+          <div class="field-wrap">
+            <label for="activo">Estado del registro</label>
+            <select id="activo">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <div id="mensajeFormulario" class="mensaje"></div>
+        </div>
+
+        <aside class="edicion-imagen-panel" id="panelImagenEdicion">
+          <div class="edicion-imagen-cabecera">
+            <span id="tituloImagenEdicion">Comprobante adjunto</span>
+            <div class="edicion-imagen-acciones">
+              <button type="button" class="btn-mini btn-cuadro" id="btnAbrirImagenGrande" title="Abrir imagen en tamaño grande" disabled>↗</button>
+            </div>
+          </div>
+          <div class="edicion-imagen-cuerpo">
+            <div class="edicion-imagen-vacia" id="textoImagenEdicion">Seleccione el botón <strong>E</strong> de un registro para cargar sus datos y visualizar aquí la factura adjunta.</div>
+            <img id="imgAdjuntoEdicion" alt="Factura adjunta para validación" />
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <!-- BARRA DE ACCIONES -->
+  <div class="form-actions">
+    <button type="button" class="btn-form btn-save" id="btnGuardar">💾 Guardar cambios</button>
+    <button type="button" class="btn-form btn-cancel" id="btnNuevoRegistro">Limpiar</button>
+    <a class="btn-form btn-cancel" href="8010-fact_prov.html" style="text-decoration:none;">➕ Nueva factura (8010)</a>
+  </div>
+
+  <!-- MODAL LINK 606 -->
+  <div id="modalLinkFondo" class="modal-link-fondo">
+    <div class="modal-link">
+      <h3>Link 606 generado</h3>
+      <p>El enlace tiene vigencia de 72 horas. Puedes copiarlo desde el campo siguiente.</p>
+      <input type="text" id="txtLinkGenerado" readonly />
+      <div class="modal-link-acciones">
+        <button type="button" class="btn-form btn-cancel" id="btnCopiarLinkGenerado">Copiar link</button>
+        <button type="button" class="btn-form btn-save" id="btnCerrarModalLink">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="i01-base_conexion.js"></script>
+<script src="i02-auth.js"></script>
+<script src="base_menu_lat.js"></script>
+<script src="base_funcion.js"></script>
+
+<script>
+'use strict';
+
+// ============================================================
+// CONFIGURACIÓN GENERAL DE LA PANTALLA
+// ------------------------------------------------------------
+// La pantalla opera sobre la factura de proveedor (FIN10).
+// AJUSTAR los nombres de exportación/vista si difieren.
+// ============================================================
+const SCHEMA              = 'dev_v2';
+const FORMULARIO_CODIGO   = 'FIN10_FACT_PROVEEDOR';
+
+const TABLA_FIN10         = 't_opr_fin10_factura_proveedor';
+const CAMPO_ID            = 'factura_prov_id';
+const TABLA_PROVEEDOR     = 'mt_opr_proveedor';
+const BUCKET_FACTURAS     = 'facturas-proveedor';    // Bucket de adjuntos (igual que 8010)
+let _urlImagenEdicionActual = '';
+let _rutaImagenEdicionActual = '';
+
+// URL pública para el link 606. Si se deja vacío usa el mismo dominio.
+
+// ============================================================
+// REGLA DE NEGOCIO: CAMPOS DE CÁLCULO
+// ============================================================
+const CAMPOS_NUMERICOS = [
+  'subtotal_servicios_locales',
+  'subtotal_bienes_locales',
+  'subtotal_bruto_factura',
+  'impuesto_selectivo_consumo',
+  'otros_impuestos_tasas',
+  'monto_propina_legal'
+];
+
+const CAMPOS_ITBIS = [
+  'itbis_servicios_locales',
+  'itbis_bienes_locales',
+  'itbis_total'
+];
+
+const CAMPOS_NUMERICOS_EDITABLES = [...CAMPOS_NUMERICOS, ...CAMPOS_ITBIS];
+
+// Clasificación 606: registros "incompletos" si falta alguno de estos.
+const CAMPOS_CLASIFICACION = ['tipo_compra', 'forma_pago', 'gastado_por', 'tipo_solicitud'];
+
+// ============================================================
+// ESTADO DE LA PANTALLA
+// ============================================================
+const Estado = {
+  proveedorId: null,
+  registroEnEdicion: null
+};
+
+let _proveedores = [];
+let _resultados = [];
+let _resultadosFiltrados = [];
+
+// ============================================================
+// UTILIDADES LOCALES
+// ============================================================
+function num(v) { const n = Number(String(v ?? '').replace(/,/g, '')); return Number.isFinite(n) ? n : 0; }
+function fmt(n) { return num(n).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function normalizar(v) { return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+function soloNumeros(v) { return String(v || '').replace(/\D/g, ''); }
+function escaparHtmlLocal(v) {
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function hoyISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function valorTexto(id) {
+  const v = (getValor(id) ?? '').toString().trim();
+  return v === '' ? null : v;
+}
+function valorNumero(id) {
+  const v = getValor(id);
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isNaN(n) ? null : n;
+}
+function valorClasificado(v) {
+  return v !== null && v !== undefined && String(v).trim() !== '';
+}
+
+async function obtenerUsuarioId() {
+  if (window.APP_USUARIO?.usuario_id) return window.APP_USUARIO.usuario_id;
+  const usuario = await obtenerUsuarioActualBase();
+  return usuario?.id || null;
+}
+
+function msgBusqueda(texto, tipo = 'info', swal = false) {
+  mostrarMensaje(texto, tipo, { idMensaje: 'mensajeBusqueda', swal });
+}
+function msgFormulario(texto, tipo = 'info', swal) {
+  mostrarMensaje(texto, tipo, { idMensaje: 'mensajeFormulario', swal: swal ?? (tipo !== 'info') });
+}
+
+// ============================================================
+// REGLA DE NEGOCIO: CÁLCULO DE TOTALES
+// total_factura = suma(montos base) + itbis_total
+// itbis_total   = itbis_servicios + itbis_bienes
+// ============================================================
+function calcularTotalFactura() {
+  setValor('subtotal_bruto_factura', (num(getValor('subtotal_servicios_locales')) + num(getValor('subtotal_bienes_locales'))).toFixed(2));
+  const totalBase = CAMPOS_NUMERICOS.filter(id => id !== 'subtotal_bruto_factura').reduce((acc, id) => acc + num(getValor(id)), 0);
+
+  const itbisTotal = num(getValor('itbis_servicios_locales')) + num(getValor('itbis_bienes_locales'));
+  setValor('itbis_total', itbisTotal.toFixed(2));
+
+  const totalFactura = totalBase + itbisTotal;
+  setValor('total_factura', totalFactura.toFixed(2));
+
+  return totalFactura;
+}
+
+// ============================================================
+// CATÁLOGO GASTADO_POR (mt_cat_opcion — igual que 8010)
+// ============================================================
+async function cargarCatalogos() {
+  for (const [id,codigo] of [['tipo_compra','TIPO_COMPRA'],['forma_pago','FORMA_PAGO'],['gastado_por','GASTADO_POR'],['tipo_solicitud','TIPO_SOLICITUD']]) {
+    await cargarCatalogo({schema:SCHEMA,selectId:id,formularioCodigo:FORMULARIO_CODIGO,catalogoCodigo:codigo,valor:'valor',texto:'opcion_nombre'});
+  }
+}
+
+function opcionesHtml(selectId, valorActual) {
+  const opciones = Array.from(obtenerElemento(selectId)?.options || []);
+  const existe = opciones.some(op => String(op.value) === String(valorActual || ''));
+  let html = opciones.map(op =>
+    `<option value="${escaparHtmlLocal(op.value)}" ${String(op.value) === String(valorActual || '') ? 'selected' : ''}>${escaparHtmlLocal(op.textContent)}</option>`
+  ).join('');
+  // Conservar valores históricos que no estén en el catálogo actual.
+  if (valorActual && !existe) {
+    html += `<option value="${escaparHtmlLocal(valorActual)}" selected>${escaparHtmlLocal(valorActual)}</option>`;
+  }
+  return html;
+}
+
+// ============================================================
+// PROVEEDORES (maestro mt_opr_proveedor)
+// ============================================================
+async function cargarProveedores() {
+  try {
+    _proveedores = await consultarTabla(TABLA_PROVEEDOR, {
+      schema: SCHEMA,
+      select: 'proveedor_id, rnc, proveedor',
+      orden: 'proveedor'
+    });
+  } catch (err) {
+    console.warn('No se pudieron cargar proveedores:', err);
+    _proveedores = [];
+  }
+}
+
+function mostrarListaProveedores(idLista, lista) {
+  const el = obtenerElemento(idLista);
+  if (!el) return;
+  el.innerHTML = '';
+  if (!lista.length) { el.classList.remove('visible'); return; }
+  lista.slice(0, 15).forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'autocomplete-item';
+    item.innerHTML = `<strong>${escaparHtmlLocal(p.proveedor || 'Sin proveedor')}</strong><div class="item-rnc">${escaparHtmlLocal(p.rnc || 'Sin RNC')}</div>`;
+    item.addEventListener('mousedown', () => seleccionarProveedor(p));
+    el.appendChild(item);
+  });
+  el.classList.add('visible');
+}
+
+function ocultarListaLocal(id) {
+  obtenerElemento(id)?.classList.remove('visible');
+}
+
+function seleccionarProveedor(p) {
+  Estado.proveedorId = p.proveedor_id || null;
+  setValor('nombre_proveedor', p.proveedor || '');
+  setValor('rnc_proveedor', p.rnc || '');
+  ocultarListaLocal('listaProveedor');
+  ocultarListaLocal('listaRnc');
+}
+
+function manejarInputProveedor(e) {
+  Estado.proveedorId = null;
+  const texto = normalizar(e.target.value);
+  if (!texto) { ocultarListaLocal('listaProveedor'); return; }
+  mostrarListaProveedores('listaProveedor',
+    _proveedores.filter(p => normalizar(`${p.proveedor || ''} ${p.rnc || ''}`).includes(texto)));
+}
+
+function manejarInputRnc(e) {
+  Estado.proveedorId = null;
+  const texto = soloNumeros(e.target.value);
+  if (!texto) { ocultarListaLocal('listaRnc'); return; }
+  mostrarListaProveedores('listaRnc',
+    _proveedores.filter(p => soloNumeros(p.rnc).includes(texto)));
+}
+
+// ============================================================
+// FORMULARIO: GUARDAR (INSERT / UPDATE)
+// Los campos de auditoría los establece el trigger
+// fn_app_set_campos_auditoria — no se envían desde aquí.
+// ============================================================
+function obtenerPayloadFormulario() {
+  return {
+    fecha_factura: valorTexto('fecha_factura'),
+    numero_ncf: valorTexto('numero_ncf'),
+    rnc_proveedor: valorTexto('rnc_proveedor'),
+    nombre_proveedor: valorTexto('nombre_proveedor'),
+    proveedor_id: Estado.proveedorId || Estado.registroEnEdicion?.proveedor_id || null,
+    tipo_compra: valorTexto('tipo_compra'),
+    forma_pago: valorTexto('forma_pago'),
+    gastado_por: valorTexto('gastado_por'),
+    tipo_solicitud: valorTexto('tipo_solicitud'),
+    subtotal_servicios_locales: valorNumero('subtotal_servicios_locales') || 0,
+    subtotal_bienes_locales: valorNumero('subtotal_bienes_locales') || 0,
+    subtotal_bruto_factura: valorNumero('subtotal_bruto_factura') || 0,
+    impuesto_selectivo_consumo: valorNumero('impuesto_selectivo_consumo') || 0,
+    otros_impuestos_tasas: valorNumero('otros_impuestos_tasas') || 0,
+    monto_propina_legal: valorNumero('monto_propina_legal') || 0,
+    itbis_servicios_locales: valorNumero('itbis_servicios_locales') || 0,
+    itbis_bienes_locales: valorNumero('itbis_bienes_locales') || 0,
+    itbis_total: valorNumero('itbis_total') || 0,
+    total_factura: calcularTotalFactura(),
+    activo: getValor('activo') === 'true' || getValor('activo') === true
+  };
+}
+
+async function guardarGasto() {
+  limpiarMensaje('mensajeFormulario');
+  try {
+    const usuarioId = await obtenerUsuarioId();
+    if (!usuarioId) throw new Error('Debe iniciar sesión.');
+
+    const payload = obtenerPayloadFormulario();
+    if (!payload.fecha_factura) throw new Error('Debe indicar la fecha.');
+    if (!payload.nombre_proveedor) throw new Error('Debe indicar el proveedor.');
+
+    const id = valorTexto(CAMPO_ID);
+    if (!id) {
+      throw new Error('Seleccione una factura desde la tabla (botón Editar) para modificarla. Para registrar nuevas facturas use la pantalla 8010 — Factura Proveedor.');
+    }
+
+    const { error } = await DB.tabla(TABLA_FIN10).update(payload).eq(CAMPO_ID, id);
+
+    if (error) {
+      if (String(error.message || '').includes('idx_fin10_rnc_ncf_unique') || error.code === '23505') {
+        throw new Error('Ya existe una factura con ese RNC y NCF.');
+      }
+      throw error;
+    }
+
+    msgFormulario('Factura actualizada correctamente.', 'ok');
+    limpiarFormularioModoNuevo();
+    await buscarRegistros();
+  } catch (err) {
+    console.error(err);
+    msgFormulario(err.message || 'No fue posible guardar el registro.', 'error');
+  }
+}
+
+function limpiarFormularioModoNuevo() {
+  obtenerElemento('formGasto').reset();
+  setValor(CAMPO_ID, '');
+  setValor('activo', 'true');
+  Estado.proveedorId = null;
+  Estado.registroEnEdicion = null;
+  const box = obtenerElemento('edicionBox');
+  box.style.display = 'none';
+  box.textContent = '';
+  setValor('fecha_factura', hoyISO());
+  calcularTotalFactura();
+  limpiarMensaje('mensajeFormulario');
+}
+
+// ============================================================
+// BÚSQUEDA
+// ============================================================
+function obtenerFiltrosBusqueda() {
+  return {
+    general: normalizar(getValor('filtroGeneral')),
+    gastadoPor: normalizar(getValor('filtroGastadoPor')),
+    fechaDesde: getValor('filtroFechaDesde') || null,
+    fechaHasta: getValor('filtroFechaHasta') || null,
+    incompleto: !!getValor('filtroIncompleto'),
+    orden: getValor('ordenResultados') || 'id_desc'
+  };
+}
+
+const SELECT_FIN10 = `
+  factura_prov_id, fecha_factura, numero_ncf, rnc_proveedor, nombre_proveedor,
+  tipo_compra, forma_pago, gastado_por, tipo_solicitud,
+  subtotal_servicios_locales, subtotal_bienes_locales, subtotal_bruto_factura,
+  impuesto_selectivo_consumo, otros_impuestos_tasas, monto_propina_legal,
+  itbis_servicios_locales, itbis_bienes_locales, itbis_total, total_factura,
+  proveedor_id, adjunto_url, estado, activo, eliminado, creado_por, modificado_por, 
+  fecha_creacion, fecha_modificacion, vehiculo, proyecto, centro_costos
+`;
+
+async function consultarGastos(filtros) {
+  let query = DB.tabla(TABLA_FIN10)
+    .select(SELECT_FIN10)
+    .eq('activo', true)
+    .eq('eliminado', false)
+    .order(CAMPO_ID, { ascending: false })
+    .limit(5000);
+
+  if (filtros.fechaDesde) query = query.gte('fecha_factura', filtros.fechaDesde);
+  if (filtros.fechaHasta) query = query.lte('fecha_factura', filtros.fechaHasta);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+async function buscarRegistros() {
+  limpiarMensaje('mensajeBusqueda');
+  try {
+    msgBusqueda('Cargando registros...', 'info');
+    const filtros = obtenerFiltrosBusqueda();
+
+    _resultados = await consultarGastos(filtros);
+    // Las rutas de adjuntos se guardan con la factura.
+    _resultadosFiltrados = aplicarFiltrosLocales(_resultados, filtros);
+
+    renderizarResultados(_resultadosFiltrados);
+    actualizarResumen(_resultadosFiltrados);
+    msgBusqueda(`Registros cargados: ${_resultadosFiltrados.length}.`, 'info');
+  } catch (err) {
+    console.error(err);
+    msgBusqueda(err.message || 'No fue posible cargar los registros.', 'error', true);
+  }
+}
+
+
+// ============================================================
+// LOCALIZAR ADJUNTOS EN STORAGE
+// 8010 guarda los archivos con este patrón:
+// MM_YYYY/000001_RNC_NCF.ext
+// Cuando adjunto_url está vacío, 8011 busca el archivo por
+// factura_prov_id + RNC + NCF y construye la ruta real.
+// ============================================================
+function limpiarParteNombreArchivo(valor) {
+  return String(valor ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function carpetaAdjuntoPorFecha(fechaFactura) {
+  const fecha = String(fechaFactura || '');
+  const m = fecha.match(/^(\d{4})-(\d{2})-/);
+  return m ? `${m[2]}_${m[1]}` : null;
+}
+
+function prefijoAdjuntoFactura(registro) {
+  const id  = String(registro?.[CAMPO_ID] ?? '').padStart(6, '0');
+  const rnc = limpiarParteNombreArchivo(registro?.rnc_proveedor);
+  const ncf = limpiarParteNombreArchivo(registro?.numero_ncf);
+  return limpiarParteNombreArchivo(`${id}_${rnc}_${ncf}`);
+}
+
+async function completarAdjuntosDesdeBucket(registros) {
+  const pendientes = (registros || []).filter(r => !r.adjunto_url);
+  if (!pendientes.length) return;
+
+  // Se guarda la RUTA del objeto dentro del bucket, no un enlace firmado.
+  // Ejemplo: 07_2026/000001_101013834_bo10344e.png
+  // Los enlaces firmados expiran; la ruta permanece estable y permite
+  // generar un enlace nuevo cada vez que el usuario pulse Img.
+  const rutasEncontradas = [];
+  const porCarpeta = new Map();
+  pendientes.forEach(r => {
+    const carpeta = carpetaAdjuntoPorFecha(r.fecha_factura);
+    if (!carpeta) return;
+    if (!porCarpeta.has(carpeta)) porCarpeta.set(carpeta, []);
+    porCarpeta.get(carpeta).push(r);
+  });
+
+  for (const [carpeta, filas] of porCarpeta.entries()) {
+    const { data: archivos, error } = await window.sb.storage
+      .from(BUCKET_FACTURAS)
+      .list(carpeta, {
+        limit: 1000,
+        offset: 0,
+        sortBy: { column: 'name', order: 'asc' }
+      });
+
+    if (error) {
+      console.warn(`No fue posible consultar adjuntos en ${carpeta}:`, error.message);
+      continue;
+    }
+
+    const archivosValidos = (archivos || []).filter(a => a?.name && a.id);
+
+    filas.forEach(r => {
+      const prefijo = prefijoAdjuntoFactura(r);
+      const encontrado = archivosValidos.find(a => {
+        const nombreSinExtension = String(a.name).replace(/\.[^.]+$/, '');
+        return limpiarParteNombreArchivo(nombreSinExtension) === prefijo;
+      });
+
+      if (encontrado) {
+        const ruta = `${carpeta}/${encontrado.name}`;
+        r.adjunto_url = ruta;
+        rutasEncontradas.push({
+          factura_prov_id: r[CAMPO_ID],
+          adjunto_url: ruta
+        });
+      }
+    });
+  }
+
+  // Regularización automática para registros antiguos:
+  // cuando 8011 encuentra el archivo por ID + RNC + NCF, guarda la ruta
+  // en t_opr_fin10_factura_proveedor.adjunto_url. Si el usuario no tiene
+  // permiso UPDATE, la imagen se seguirá mostrando durante esta consulta
+  // y el error quedará registrado solamente en la consola.
+  if (rutasEncontradas.length) {
+    const resultados = await Promise.allSettled(
+      rutasEncontradas.map(async item => {
+        const { error } = await DB
+          .tabla(TABLA_FIN10)
+          .update({ adjunto_url: item.adjunto_url })
+          .eq(CAMPO_ID, item.factura_prov_id);
+
+        if (error) throw error;
+        return item;
+      })
+    );
+
+    resultados.forEach((resultado, indice) => {
+      if (resultado.status === 'rejected') {
+        const item = rutasEncontradas[indice];
+        console.warn(
+          `No fue posible guardar adjunto_url para la factura ${item.factura_prov_id}:`,
+          resultado.reason?.message || resultado.reason
+        );
+      }
+    });
+  }
+}
+
+function aplicarFiltrosLocales(registros, filtros) {
+  let r = [...(registros || [])].filter(x => x.activo !== false && x.eliminado !== true);
+
+  if (filtros.general) {
+    r = r.filter(x => normalizar([x.nombre_proveedor, x.rnc_proveedor, x.numero_ncf].join(' | ')).includes(filtros.general));
+  }
+  if (filtros.gastadoPor) {
+    r = r.filter(x => normalizar(x.gastado_por).includes(filtros.gastadoPor));
+  }
+  if (filtros.fechaDesde) r = r.filter(x => (x.fecha_factura || '') >= filtros.fechaDesde);
+  if (filtros.fechaHasta) r = r.filter(x => (x.fecha_factura || '') <= filtros.fechaHasta);
+
+  if (filtros.incompleto) {
+    r = r.filter(x => CAMPOS_CLASIFICACION.some(c => !valorClasificado(x[c])));
+  }
+
+  switch (filtros.orden) {
+    case 'id_asc':
+      return r.sort((a, b) => num(a[CAMPO_ID]) - num(b[CAMPO_ID]));
+    case 'fecha_desc':
+      return r.sort((a, b) => String(b.fecha_factura || '').localeCompare(String(a.fecha_factura || '')) || num(b[CAMPO_ID]) - num(a[CAMPO_ID]));
+    case 'fecha_asc':
+      return r.sort((a, b) => String(a.fecha_factura || '').localeCompare(String(b.fecha_factura || '')) || num(a[CAMPO_ID]) - num(b[CAMPO_ID]));
+    case 'id_desc':
+    default:
+      return r.sort((a, b) => num(b[CAMPO_ID]) - num(a[CAMPO_ID]));
+  }
+}
+
+function actualizarResumen(registros) {
+  obtenerElemento('badgeCantidad').textContent = `${registros.length} registros`;
+  const total = registros.reduce((acc, r) => acc + num(r.total_factura), 0);
+  obtenerElemento('badgeMonto').textContent = `Monto total: ${fmt(total)}`;
+}
+
+function limpiarBusqueda() {
+  setValor('filtroGeneral', '');
+  setValor('filtroGastadoPor', '');
+  setValor('filtroFechaDesde', '');
+  setValor('filtroFechaHasta', '');
+  setValor('filtroIncompleto', false);
+  setValor('ordenResultados', 'id_desc');
+  buscarRegistros();
+}
+
+// ============================================================
+// TABLA DE RESULTADOS CON EDICIÓN EN LÍNEA
+// Todas las filas se editan por igual.
+// ============================================================
+function renderizarResultados(registros) {
+  const tbody = obtenerElemento('tbodyResultadosBusqueda');
+  tbody.innerHTML = '';
+
+  if (!registros.length) {
+    tbody.innerHTML = '<tr><td colspan="22">No hay registros con los filtros aplicados.</td></tr>';
+    return;
+  }
+
+  registros.forEach(r => {
+    const id = r[CAMPO_ID];
+    const tr = document.createElement('tr');
+    tr.dataset.id = id;
+    tr.innerHTML = `
+      <td class="col-accion-mini">${r.adjunto_url
+        ? `<button type="button" class="btn-mini btn-verde btn-cuadro" data-adjunto="${escaparHtmlLocal(r.adjunto_url)}" data-id-adjunto="${id}" title="Ver imagen adjunta">Img</button>`
+        : `<button type="button" class="btn-mini btn-cuadro" disabled title="Sin imagen adjunta">Img</button>`}</td>
+      <td class="col-accion-mini"><button type="button" class="btn-mini btn-cuadro" data-editar="${id}" title="Editar registro ${id}">E</button></td>
+      <td class="col-id">${escaparHtmlLocal(id)}</td>
+      <td><input class="editable-linea" data-campo="fecha_factura" data-id="${id}" type="date" value="${escaparHtmlLocal(r.fecha_factura || '')}"></td>
+      <td><input class="editable-linea" data-campo="nombre_proveedor" data-id="${id}" value="${escaparHtmlLocal(r.nombre_proveedor || '')}"></td>
+      <td><input class="editable-linea" data-campo="rnc_proveedor" data-id="${id}" value="${escaparHtmlLocal(r.rnc_proveedor || '')}"></td>
+      <td><input class="editable-linea" data-campo="numero_ncf" data-id="${id}" value="${escaparHtmlLocal(r.numero_ncf || '')}"></td>
+      <td><select class="editable-linea" data-campo="tipo_compra" data-id="${id}">${opcionesHtml('tipo_compra', r.tipo_compra)}</select></td>
+      <td><select class="editable-linea" data-campo="forma_pago" data-id="${id}">${opcionesHtml('forma_pago', r.forma_pago)}</select></td>
+      <td><select class="editable-linea" data-campo="gastado_por" data-id="${id}">${opcionesHtml('gastado_por', r.gastado_por)}</select></td>
+      <td><select class="editable-linea" data-campo="tipo_solicitud" data-id="${id}">${opcionesHtml('tipo_solicitud', r.tipo_solicitud)}</select></td>
+      ${campoNumeroLinea(r, 'subtotal_servicios_locales')}
+      ${campoNumeroLinea(r, 'subtotal_bienes_locales')}
+      ${campoNumeroLinea(r, 'subtotal_bruto_factura')}
+      ${campoNumeroLinea(r, 'impuesto_selectivo_consumo')}
+      ${campoNumeroLinea(r, 'otros_impuestos_tasas')}
+      ${campoNumeroLinea(r, 'monto_propina_legal')}
+      ${campoNumeroLinea(r, 'itbis_servicios_locales')}
+      ${campoNumeroLinea(r, 'itbis_bienes_locales')}
+      ${campoNumeroLinea(r, 'itbis_total')}
+      <td class="col-total" id="total_linea_${id}">${fmt(r.total_factura)}</td>
+      <td>${escaparHtmlLocal(r.estado || (r.activo === false ? 'Inactivo' : 'Activo'))}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.editable-linea').forEach(el => {
+    el.addEventListener('change', guardarCambioLinea);
+    el.addEventListener('blur', e => {
+      if (e.target.tagName !== 'SELECT') guardarCambioLinea(e);
+    });
+  });
+
+  tbody.querySelectorAll('button[data-editar]').forEach(btn => {
+    btn.addEventListener('click', () => cargarRegistroEnFormulario(btn.dataset.editar));
+  });
+
+  tbody.querySelectorAll('button[data-adjunto]').forEach(btn => {
+    btn.addEventListener('click', () => verAdjunto(btn.dataset.adjunto, btn.dataset.idAdjunto));
+  });
+}
+
+function campoNumeroLinea(r, campo) {
+  return `<td><input class="editable-linea numero" data-campo="${campo}" data-id="${r[CAMPO_ID]}" type="number" step="0.01" ${['subtotal_bruto_factura','itbis_total'].includes(campo) ? 'readonly' : ''} value="${num(r[campo])}"></td>`;
+}
+
+async function guardarCambioLinea(event) {
+  const el = event.target;
+  const id = el.dataset.id;
+  const campo = el.dataset.campo;
+  if (!id || !campo) return;
+
+  const registro = _resultados.find(r => String(r[CAMPO_ID]) === String(id));
+  if (!registro) return;
+
+  let valor = el.value;
+  const payload = {};
+
+  if (CAMPOS_NUMERICOS_EDITABLES.includes(campo)) {
+    valor = num(valor);
+    payload[campo] = valor;
+    registro[campo] = valor;
+
+    // Regla: itbis_total = itbis_servicios + itbis_bienes
+    const itbisTotal = num(registro.itbis_servicios_locales) + num(registro.itbis_bienes_locales);
+    registro.itbis_total = itbisTotal;
+    payload.itbis_total = itbisTotal;
+
+    const itbisTotalCampo = document.querySelector(`[data-id="${id}"][data-campo="itbis_total"]`);
+    if (itbisTotalCampo && campo !== 'itbis_total') itbisTotalCampo.value = itbisTotal.toFixed(2);
+
+    // Regla: total_factura = montos base + itbis_total
+    registro.subtotal_bruto_factura = num(registro.subtotal_servicios_locales) + num(registro.subtotal_bienes_locales);
+    payload.subtotal_bruto_factura = registro.subtotal_bruto_factura;
+    const subtotalCampo = document.querySelector(`[data-id="${id}"][data-campo="subtotal_bruto_factura"]`);
+    if (subtotalCampo) subtotalCampo.value = registro.subtotal_bruto_factura.toFixed(2);
+    const totalBase = CAMPOS_NUMERICOS.filter(c => c !== 'subtotal_bruto_factura').reduce((acc, c) => acc + num(registro[c]), 0);
+    const total = totalBase + itbisTotal;
+
+    payload.total_factura = total;
+    registro.total_factura = total;
+
+    const totalCelda = obtenerElemento(`total_linea_${id}`);
+    if (totalCelda) totalCelda.textContent = fmt(total);
+  } else {
+    payload[campo] = valor || null;
+    registro[campo] = valor || null;
+  }
+
+  try {
+    el.classList.remove('ok', 'error');
+    el.classList.add('guardando');
+
+    // Auditoría: la establece el trigger fn_app_set_campos_auditoria.
+    const { error } = await DB.tabla(TABLA_FIN10).update(payload).eq(CAMPO_ID, id);
+    if (error) throw error;
+
+    el.classList.remove('guardando');
+    el.classList.add('ok');
+    setTimeout(() => el.classList.remove('ok'), 900);
+
+    _resultadosFiltrados = aplicarFiltrosLocales(_resultados, obtenerFiltrosBusqueda());
+    actualizarResumen(_resultadosFiltrados);
+  } catch (err) {
+    console.error(err);
+    el.classList.remove('guardando');
+    el.classList.add('error');
+    msgBusqueda(err.message || 'No fue posible guardar el cambio en línea.', 'error', true);
+  }
+}
+
+function cargarRegistroEnFormulario(id) {
+  const r = _resultados.find(item => String(item[CAMPO_ID]) === String(id));
+  if (!r) return;
+
+  Estado.registroEnEdicion = r;
+  Estado.proveedorId = r.proveedor_id || null;
+
+  setValor(CAMPO_ID, r[CAMPO_ID] || '');
+  setValor('fecha_factura', r.fecha_factura || '');
+  setValor('numero_ncf', r.numero_ncf || '');
+  setValor('rnc_proveedor', r.rnc_proveedor || '');
+  setValor('nombre_proveedor', r.nombre_proveedor || '');
+  setValor('tipo_compra', r.tipo_compra || '');
+  setValor('forma_pago', r.forma_pago || '');
+  setValor('gastado_por', r.gastado_por || '');
+  setValor('tipo_solicitud', r.tipo_solicitud || '');
+  setValor('activo', r.activo === false ? 'false' : 'true');
+  CAMPOS_NUMERICOS_EDITABLES.forEach(c => setValor(c, num(r[c])));
+  calcularTotalFactura();
+
+  const box = obtenerElemento('edicionBox');
+  box.textContent = `Modo edición: ID ${r[CAMPO_ID]} | Proveedor: ${r.nombre_proveedor || ''}`;
+  box.style.display = 'block';
+
+  cargarImagenEnPanelEdicion(r).catch(err => {
+    console.error(err);
+    mostrarImagenEdicionVacia('No fue posible cargar la imagen adjunta de este registro.');
+  });
+
+  document.querySelector('#panelImagenEdicion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// VER ARCHIVO ADJUNTO
+// adjunto_url guarda la ruta dentro del bucket facturas-proveedor
+// (mismo esquema de carga que la pantalla 8010). Se genera un
+// enlace firmado temporal (1 hora) y se abre en otra pestaña.
+// ============================================================
+async function obtenerUrlAdjunto(ruta) {
+  if (!ruta) return '';
+  if (/^https?:\/\//i.test(ruta)) return ruta;
+
+  const { data, error } = await window.sb.storage
+    .from(BUCKET_FACTURAS)
+    .createSignedUrl(ruta, 3600);
+
+  if (!error && data?.signedUrl) return data.signedUrl;
+
+throw error || new Error('No fue posible generar el enlace del adjunto.');
+}
+
+function mostrarImagenEdicionVacia(mensaje) {
+  _urlImagenEdicionActual = '';
+  _rutaImagenEdicionActual = '';
+  const img = obtenerElemento('imgAdjuntoEdicion');
+  const texto = obtenerElemento('textoImagenEdicion');
+  const btn = obtenerElemento('btnAbrirImagenGrande');
+  if (img) { img.style.display = 'none'; img.removeAttribute('src'); }
+  if (texto) { texto.style.display = 'block'; texto.textContent = mensaje || 'Este registro no tiene una imagen adjunta.'; }
+  if (btn) btn.disabled = true;
+}
+
+async function cargarImagenEnPanelEdicion(registro) {
+  const ruta = registro?.adjunto_url || '';
+  const titulo = obtenerElemento('tituloImagenEdicion');
+  if (titulo) titulo.textContent = registro ? `Comprobante adjunto — Registro ${registro[CAMPO_ID]}` : 'Comprobante adjunto';
+
+  if (!ruta) {
+    mostrarImagenEdicionVacia('Este registro no tiene una imagen adjunta asociada.');
+    return;
+  }
+
+  const extension = String(ruta).split('?')[0].split('.').pop().toLowerCase();
+  const esImagen = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg'].includes(extension);
+  if (!esImagen) {
+    mostrarImagenEdicionVacia('El adjunto existe, pero no es una imagen. Use el botón ↗ para abrirlo.');
+    _rutaImagenEdicionActual = ruta;
+    _urlImagenEdicionActual = await obtenerUrlAdjunto(ruta);
+    const btn = obtenerElemento('btnAbrirImagenGrande');
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  const url = await obtenerUrlAdjunto(ruta);
+  _rutaImagenEdicionActual = ruta;
+  _urlImagenEdicionActual = url;
+
+  const img = obtenerElemento('imgAdjuntoEdicion');
+  const texto = obtenerElemento('textoImagenEdicion');
+  const btn = obtenerElemento('btnAbrirImagenGrande');
+  if (texto) texto.style.display = 'none';
+  if (img) {
+    img.src = url;
+    img.style.display = 'block';
+  }
+  if (btn) btn.disabled = false;
+}
+
+async function verAdjunto(ruta, idRegistro = '') {
+  if (!ruta) return;
+
+  try {
+    const url = await obtenerUrlAdjunto(ruta);
+
+    const extension = String(ruta).split('?')[0].split('.').pop().toLowerCase();
+    const esImagen = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg'].includes(extension);
+
+    if (!esImagen) {
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
+
+    const fondo = obtenerElemento('modalImagenFondo');
+    const img = obtenerElemento('imgAdjuntoVista');
+    obtenerElemento('modalImagenTitulo').textContent = idRegistro ? `Imagen adjunta — Registro ${idRegistro}` : 'Imagen adjunta';
+    img.src = url;
+    fondo.style.display = 'flex';
+    fondo.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  } catch (err) {
+    console.error(err);
+    msgBusqueda(err.message || 'No fue posible abrir el archivo adjunto.', 'error', true);
+  }
+}
+
+function cerrarVistaImagen() {
+  const fondo = obtenerElemento('modalImagenFondo');
+  const img = obtenerElemento('imgAdjuntoVista');
+  fondo.style.display = 'none';
+  fondo.setAttribute('aria-hidden', 'true');
+  img.removeAttribute('src');
+  document.body.style.overflow = '';
+}
+
+// ============================================================
+// EXPORTACIONES EXCEL
+// ============================================================
+function generarNombreArchivo(prefijo, token) {
+  const d = new Date();
+  const marca = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}${String(d.getSeconds()).padStart(2,'0')}`;
+  return token ? `${prefijo}_${marca}_${token}.xlsx` : `${prefijo}_${marca}.xlsx`;
+}
+
+async function exportarExcelDesdeFilas(filas, nombreHoja, nombreArchivo) {
+  const ws = XLSX.utils.json_to_sheet(filas);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+  XLSX.writeFile(wb, nombreArchivo);
+}
+
+function filasFacturaProveedor(registros) {
+  return (registros || []).map(item => ({
+    ID: item.factura_prov_id,
+    Fecha: item.fecha_factura,
+    NCF: item.numero_ncf,
+    RNC: item.rnc_proveedor,
+    Proveedor: item.nombre_proveedor,
+    Vehículo: item.vehiculo || '',
+Proyecto: item.proyecto || '',
+'Centro de Costos': item.centro_costos || '',
+    'Tipo de Compra / 606': item.tipo_compra,
+    'Subtotal Servicios Locales': num(item.subtotal_servicios_locales),
+    'Subtotal Bienes Locales': num(item.subtotal_bienes_locales),
+    'Subtotal Bruto Factura': num(item.subtotal_bruto_factura),
+    'Impuesto Selectivo Consumo': num(item.impuesto_selectivo_consumo),
+    'Otros Impuestos Tasas': num(item.otros_impuestos_tasas),
+    'Monto Propina Legal': num(item.monto_propina_legal),
+    'ITBIS Servicios Locales': num(item.itbis_servicios_locales),
+    'ITBIS Bienes Locales': num(item.itbis_bienes_locales),
+    'ITBIS Total': num(item.itbis_total),
+    'Forma de Pago': item.forma_pago,
+    'Gastado por': item.gastado_por,
+    'Tipo Solicitud': item.tipo_solicitud,
+    'Total Factura': num(item.total_factura),
+    Adjunto: item.adjunto_url || '',
+    Estado: item.estado || (item.activo === false ? 'Inactivo' : 'Activo'),
+    'Creado por': item.creado_por,
+    'Modificado por': item.modificado_por,
+    'Fecha creación': item.fecha_creacion,
+    'Fecha modificación': item.fecha_modificacion
+  }));
+}
+
+async function descargarExcelFiltrado() {
+  limpiarMensaje('mensajeBusqueda');
+  try {
+    msgBusqueda('Preparando Excel general según filtro...', 'info');
+
+    // Regla original: usa filtros de pantalla pero SIN el filtro de incompleto,
+    // y re-consulta la tabla para garantizar datos frescos.
+    const filtros = obtenerFiltrosBusqueda();
+    const filtrosSinIncompleto = { ...filtros, incompleto: false };
+
+    const todos = await consultarGastos(filtros);
+    const filtrados = aplicarFiltrosLocales(todos, filtrosSinIncompleto);
+
+    if (!filtrados.length) throw new Error('No hay datos para descargar con el filtro actual.');
+
+    await exportarExcelDesdeFilas(filasFacturaProveedor(filtrados), 'Factura_Proveedor', generarNombreArchivo('factura_proveedor_filtrado'));
+    msgBusqueda(`Excel general generado. Registros exportados: ${filtrados.length}.`, 'ok');
+  } catch (err) {
+    console.error(err);
+    msgBusqueda(err.message || 'No fue posible descargar el Excel filtrado.', 'error', true);
+  }
+}
+
+function obtenerRegistrosPantallaFiltrados() {
+  const filtrados = _resultadosFiltrados.length
+    ? _resultadosFiltrados
+    : aplicarFiltrosLocales(_resultados, obtenerFiltrosBusqueda());
+  return (filtrados || []).filter(r => r.activo !== false && r.eliminado !== true);
+}
+
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+async function inicializarPantalla() {
+  try {
+    await Promise.all([cargarCatalogos(), cargarProveedores()]);
+
+    onClick('btnGuardar', guardarGasto);
+    onClick('btnNuevoRegistro', limpiarFormularioModoNuevo);
+    onClick('btnBuscarRegistros', buscarRegistros);
+    onClick('btnLimpiarBusqueda', limpiarBusqueda);
+    onClick('btnDescargarExcel', descargarExcelFiltrado);
+    onClick('btnCerrarImagen', cerrarVistaImagen);
+    onClick('btnAbrirImagenGrande', () => {
+      if (!_rutaImagenEdicionActual) return;
+      const id = Estado.registroEnEdicion?.[CAMPO_ID] || '';
+      verAdjunto(_rutaImagenEdicionActual, id);
+    });
+
+    obtenerElemento('modalImagenFondo').addEventListener('click', e => {
+      if (e.target.id === 'modalImagenFondo') cerrarVistaImagen();
+    });
+
+
+
+    obtenerElemento('nombre_proveedor').addEventListener('input', manejarInputProveedor);
+    obtenerElemento('rnc_proveedor').addEventListener('input', manejarInputRnc);
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.autocomplete-wrap')) {
+        ocultarListaLocal('listaProveedor');
+        ocultarListaLocal('listaRnc');
+      }
+    });
+
+    ['filtroGeneral', 'filtroGastadoPor', 'filtroFechaDesde', 'filtroFechaHasta', 'filtroIncompleto', 'ordenResultados'].forEach(id => {
+      const el = obtenerElemento(id);
+      el.addEventListener('change', buscarRegistros);
+      if (el.type === 'text') el.addEventListener('keydown', e => { if (e.key === 'Enter') buscarRegistros(); });
+    });
+
+    CAMPOS_NUMERICOS_EDITABLES.forEach(id => obtenerElemento(id).addEventListener('input', calcularTotalFactura));
+
+    setValor('fecha_factura', hoyISO());
+    calcularTotalFactura();
+    await buscarRegistros();
+
+    console.log('8011-fact_prov_mod inicializada.');
+  } catch (err) {
+    console.error('Error inicializando:', err);
+    msgFormulario('Error inicializando la pantalla. Revise consola.', 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => { if (await window.authReady) await inicializarPantalla(); });
+</script>
+</body>
+</html>

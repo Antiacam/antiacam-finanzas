@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antiacam · Finanzas</title>
+  <link rel="stylesheet" href="base_estilo.css" />
+  <link rel="stylesheet" href="base_menu_lat.css" />
+  <style>
+    :root {
+      --color-primary: #1e3a8a;
+      --color-primary2: #2563eb;
+      --color-ice: #eff6ff;
+      --color-border: #dde6f5;
+      --color-text: #0f172a;
+      --color-muted: #64748b;
+      --color-bg: #f0f5ff;
+      --color-white: #ffffff;
+      --color-danger: #dc2626;
+      --color-success: #16a34a;
+      --color-warn: #d97706;
+      --color-ecf: #0e7490;
+      --color-ecf-bg: #ecfeff;
+      --color-ecf-border: #a5f3fc;
+    }
+
+    body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: Arial, sans-serif; }
+    .main { min-height: 100vh; }
+    .topbar { background: var(--color-white); border-bottom: 1px solid var(--color-border); min-height: 58px; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 6px rgba(30,58,138,.06); position: sticky; top: 0; z-index: 100; gap: 16px; }
+    .topbar-left { display: flex; flex-direction: column; justify-content: center; }
+    .topbar-breadcrumb { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--color-muted); }
+    .topbar-breadcrumb a { color: var(--color-primary2); text-decoration: none; font-weight: 500; }
+    .topbar-title { font-weight: 700; font-size: 15px; color: var(--color-primary); margin-top: 2px; }
+    .campo-activo-wrap { display: none; align-items: center; gap: 6px; font-size: 12.5px; color: var(--color-muted); }
+    .campo-activo-wrap.visible { display: flex; }
+    .page-content { padding: 22px 28px 150px; display: flex; flex-direction: column; gap: 14px; max-width: 1300px; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .page-title { font-size: 18px; font-weight: 700; color: var(--color-primary); }
+    .page-sub { font-size: 12.5px; color: var(--color-muted); margin-top: 4px; }
+    .page-badge { font-size: 10.5px; padding: 3px 10px; border-radius: 20px; background: var(--color-ice); color: var(--color-primary2); border: 1px solid #bfdbfe; white-space: nowrap; flex-shrink: 0; margin-top: 4px; }
+    .section-card { background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted); margin-bottom: 14px; }
+    .form-row { display: grid; gap: 14px; margin-bottom: 14px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-row.cols-1 { grid-template-columns: 1fr; }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; font-weight: 600; color: #334155; }
+    .field-hint { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 13px; background: var(--color-white); color: var(--color-text); outline: none; font-family: inherit; box-sizing: border-box; }
+    input:focus, select:focus, textarea:focus { border-color: var(--color-primary2); background: var(--color-ice); }
+    input:disabled, select:disabled, textarea:disabled { background: #f1f5f9; color: #475569; cursor: not-allowed; border-color: #e2e8f0; }
+    input[readonly] { background: #f8fafc; color: #334155; }
+    textarea { resize: vertical; min-height: 60px; }
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-lista { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 8px; box-shadow: 0 6px 20px rgba(30,58,138,.12); z-index: 60; max-height: 220px; overflow-y: auto; display: none; }
+    .autocomplete-lista.visible { display: block; }
+    .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 12.5px; border-bottom: 1px solid #f1f5f9; }
+    .autocomplete-item:hover { background: var(--color-ice); }
+    .autocomplete-item .item-rnc { font-size: 11px; color: var(--color-muted); }
+    /* Diseño de filas: Montos 606 y Proveedor */
+    .form-row.row-montos .field-wrap, .form-row.row-prov-1 .field-wrap, .form-row.row-prov-2 .field-wrap { min-width: 0; }
+    .form-row.row-montos { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    /* Fila 1 proporcional al tamaño: RNC 15 · Nombre 70 · Tipo compra 70 · Tipo solicitud 35 */
+    .form-row.row-prov-1 { grid-template-columns: minmax(150px, 15fr) minmax(0, 70fr) minmax(0, 70fr) minmax(0, 35fr); grid-auto-flow: column; grid-auto-columns: minmax(130px, 24fr); align-items: start; }
+    .form-row.row-prov-2 { grid-template-columns: 1fr 1fr 1fr 1fr 2.4fr 1.1fr; align-items: start; }
+    @media (max-width: 1100px) {
+      .form-row.row-montos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .form-row.row-prov-1 { grid-template-columns: 1fr 2fr; grid-auto-flow: row; grid-auto-columns: auto; }
+      .form-row.row-prov-2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .form-row.row-montos, .form-row.row-prov-1, .form-row.row-prov-2 { grid-template-columns: 1fr; }
+    }
+    .ecf-badge, .manual-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+    .ecf-badge { background: var(--color-ecf-bg); color: var(--color-ecf); border: 1px solid var(--color-ecf-border); }
+    .ecf-badge::before { content: "⚡"; }
+    .manual-badge { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; }
+    .bloque-ecf { background: var(--color-ecf-bg); border: 1px solid var(--color-ecf-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+    .bloque-ecf .section-title { color: var(--color-ecf); }
+    .ecf-input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .ecf-input-row .field-wrap { flex: 1; }
+    .totales-606 { background: var(--color-ice); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 18px; }
+    .totales-grid-606 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .total-item { display: flex; flex-direction: column; gap: 4px; }
+    .total-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); }
+    .total-valor { font-size: 14px; font-weight: 700; color: var(--color-primary); }
+    .total-item.total-final .total-valor { font-size: 18px; color: var(--color-primary2); }
+    .tabla-detalle-wrap { overflow-x: auto; }
+    .tabla-detalle { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .tabla-detalle thead th { background: var(--color-ice); color: var(--color-primary); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 8px; border-bottom: 2px solid var(--color-border); text-align: left; white-space: nowrap; }
+    .tabla-detalle thead th.th-num { text-align: right; }
+    .tabla-detalle td { padding: 5px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .tabla-detalle td.td-num { text-align: right; }
+    .tabla-detalle td input, .tabla-detalle td select { padding: 5px 7px; font-size: 12px; }
+    .subtotal-linea { font-weight: 700; color: var(--color-primary); white-space: nowrap; }
+    .btn-eliminar-fila { background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 14px; padding: 2px 5px; border-radius: 4px; }
+    .btn-eliminar-fila:hover { background: #fef2f2; }
+    .btn-agregar-fila { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1.5px dashed var(--color-primary2); background: var(--color-ice); color: var(--color-primary2); margin-top: 10px; }
+    .adjunto-preview { margin-top: 8px; display: none; }
+    .adjunto-link { font-size: 12px; color: var(--color-primary2); font-weight: 600; text-decoration: none; }
+    .alerta-ecf { display: none; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; margin-top: 8px; }
+    .alerta-ecf.ok { display: block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .alerta-ecf.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alerta-ecf.warn { display: block; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .form-actions { position: fixed; bottom: 0; left: var(--sidebar-w, 252px); right: 0; background: var(--color-white); border-top: 1px solid var(--color-border); padding: 12px 28px; display: flex; align-items: center; gap: 10px; z-index: 90; box-shadow: 0 -2px 10px rgba(30,58,138,.06); transition: left .3s; }
+    .btn-form { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-cancel { background: #f1f5f9; color: #475569; }
+    .btn-search { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .btn-edit { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .btn-save { background: var(--color-primary2); color: #fff; }
+    .btn-ecf { background: var(--color-ecf-bg); color: var(--color-ecf); border: 1px solid var(--color-ecf-border); }
+    .mensaje { padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; }
+    .mensaje.info { display: block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .mensaje.ok { display: block; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .mensaje.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .swal-sobre-modal { z-index: 99999 !important; }
+    .lista-busqueda-item { padding: 9px 14px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+    .lista-busqueda-item:hover { background: var(--color-ice); }
+    .lista-busqueda-item.sin-resultados { color: var(--color-muted); cursor: default; }
+    @media (max-width: 700px) {
+      .form-row.cols-2, .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr; }
+      .totales-grid-606 { grid-template-columns: 1fr 1fr; }
+      .page-content { padding: 14px 14px 150px; }
+      .topbar { padding: 0 14px; }
+      .form-actions { left: var(--sidebar-c, 66px); padding: 10px 14px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<main class="main" id="mainContent">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-breadcrumb"><a href="8010-fact_prov.html">Inicio</a> › <span>Finanzas</span> › <span>Factura Proveedor</span></div>
+      <div class="topbar-title">Registro de Factura Proveedor</div>
+    </div>
+    <div class="campo-activo-wrap" id="wrapActivo">
+      <input type="checkbox" id="activo" name="activo" checked />
+      <label for="activo" style="font-weight:400;font-size:12.5px;">Registro activo</label>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Factura Proveedor</div>
+        <div class="page-sub">Registro de facturas para 606. Antiacam · Finanzas.</div>
+      </div>
+     
+    </div>
+
+    <!-- BÚSQUEDA -->
+    <div id="bloqueBusqueda" style="display:none;background:var(--color-white);border:1px solid var(--color-border);border-radius:12px;padding:14px 18px;">
+      <div class="section-title">Buscar factura existente</div>
+      <div style="position:relative;">
+        <input type="text" id="txtBusqueda" placeholder="Buscar por NCF, proveedor, RNC o número..."
+               autocomplete="off" style="width:100%;padding:9px 14px;border:1px solid var(--color-border);border-radius:8px;font-size:13px;background:var(--color-bg);color:var(--color-text);outline:none;box-sizing:border-box;" />
+        <div id="listaBusqueda" style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--color-white);border:1px solid var(--color-border);border-radius:8px;box-shadow:0 6px 20px rgba(30,58,138,.10);z-index:50;max-height:240px;overflow-y:auto;display:none;"></div>
+      </div>
+    </div>
+
+    <form id="formFactura" novalidate>
+      <input type="hidden" id="factura_prov_id" />
+      <input type="hidden" id="via_carga" value="MANUAL" />
+      <input type="hidden" id="tipo_ncf_hidden" value="MANUAL" />
+      <input type="hidden" id="adjunto_url" />
+
+      <div class="section-card">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;"><span>Comprobante Fiscal</span><span id="badgeTipoNcf"></span></div>
+        <div class="form-row cols-4">
+          <div class="field-wrap">
+            <label for="numero_ncf">NCF / e-NCF <span style="color:var(--color-danger)">*</span></label>
+            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" placeholder="Ej: E310000123456 o B0100001234" />
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button type="button" id="btnActivarEcf" class="btn-form btn-ecf" style="padding:5px 12px;font-size:11.5px;">⚡ Es e-CF (QR)</button>
+              <button type="button" id="btnActivarEcfManual" class="btn-form btn-ecf" style="padding:5px 12px;font-size:11.5px;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;">✏️ e-CF Manual</button>
+            </div>
+          </div>
+          <div class="field-wrap"><label for="fecha_factura">Fecha factura <span style="color:var(--color-danger)">*</span></label><input type="date" id="fecha_factura" /></div>
+          <div class="field-wrap"><label for="fecha_vencimiento">Fecha vencimiento</label><input type="date" id="fecha_vencimiento" /></div>
+          <div class="field-wrap"><label for="estado_visible">Estado</label><input type="text" id="estado_visible" value="Registrada" readonly /></div>
+        </div>
+
+        <div id="bloqueEcf" class="bloque-ecf" style="display:none;">
+          <div class="section-title">Verificación e-CF — Datos del QR</div>
+          <div class="ecf-input-row">
+            <div class="field-wrap"><label for="url_consulta_ecf">URL del QR o pegar manualmente</label><input type="text" id="url_consulta_ecf" placeholder="https://ecf.dgii.gov.do/ecf/ConsultaTimbre?..." /></div>
+            <button type="button" id="btnEscanearQr" class="btn-form btn-ecf" style="white-space:nowrap;flex-shrink:0;" title="Abrir cámara para escanear el QR">📷</button>
+            <button type="button" id="btnProcesarEcf" class="btn-form btn-ecf" style="white-space:nowrap;flex-shrink:0;">⚡ Procesar eCF</button>
+          </div>
+          <div id="alertaEcf" class="alerta-ecf"></div>
+          <div class="form-row cols-3" style="margin-top:12px;">
+            <div class="field-wrap"><label>RNC Comprador</label><input type="text" id="rnc_comprador" readonly /></div>
+            <div class="field-wrap"><label>Monto Bruto NCF</label><input type="number" id="monto_bruto_ncf" step="0.01" readonly /></div>
+            <div class="field-wrap"><label>Código Seguridad</label><input type="text" id="codigo_seguridad" readonly /></div>
+          </div>
+        </div>
+
+        <div id="bloqueEcfManual" class="bloque-ecf" style="display:none;border-color:#99f6e4;background:#f0fdfa;">
+          <div class="section-title" style="color:#0f766e;">Registro Manual e-CF — Datos del comprobante</div>
+          <div class="form-row cols-4">
+            <div class="field-wrap"><label for="ecfm_rnc_emisor">RNC Emisor</label><input type="text" id="ecfm_rnc_emisor" maxlength="20" placeholder="101532483" /></div>
+            <div class="field-wrap"><label for="ecfm_rnc_comprador">RNC Comprador</label><input type="text" id="ecfm_rnc_comprador" maxlength="20" placeholder="" /></div>
+            <div class="field-wrap"><label for="ecfm_encf">e-NCF</label><input type="text" id="ecfm_encf" maxlength="20" placeholder="E310003649838" /></div>
+            <div class="field-wrap"><label for="ecfm_monto">Monto Total</label><input type="number" id="ecfm_monto" step="0.01" min="0" placeholder="0.00" /></div>
+          </div>
+          <div class="form-row cols-4">
+            <div class="field-wrap"><label for="ecfm_fecha_emision">Fecha Emisión (DD-MM-YYYY)</label><input type="text" id="ecfm_fecha_emision" maxlength="10" placeholder="27-05-2026" /></div>
+            <div class="field-wrap"><label for="ecfm_fecha_firma">Fecha Firma (DD-MM-YYYY)</label><input type="text" id="ecfm_fecha_firma" maxlength="10" placeholder="27-05-2026" /></div>
+            <div class="field-wrap"><label for="ecfm_hora_firma">Hora Firma (HH:MM:SS)</label><input type="text" id="ecfm_hora_firma" maxlength="8" placeholder="18:51:24" /></div>
+            <div class="field-wrap"><label for="ecfm_codigo_seguridad">Código Seguridad</label><input type="text" id="ecfm_codigo_seguridad" maxlength="100" placeholder="2mznUj" /></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:4px;">
+            <button type="button" id="btnValidarEcfManual" class="btn-form" style="background:#0f766e;color:#fff;padding:7px 16px;font-size:12.5px;">🔗 Validar en DGII</button>
+            <button type="button" id="btnUsarEcfManual" class="btn-form" style="background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;padding:7px 16px;font-size:12.5px;">✓ Usar estos datos</button>
+            <span id="alertaEcfManual" style="font-size:12px;color:var(--color-muted);"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Proveedor</div>
+        <!-- Fila 1: RNC (15) · Nombre (70) · Tipo de compra (70) · Tipo solicitud (35) -->
+        <div class="form-row row-prov-1">
+          <div class="field-wrap"><label for="rnc_proveedor">RNC Emisor <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="rnc_proveedor" maxlength="15" autocomplete="off" placeholder="RNC del proveedor" /><div id="listaRnc" class="autocomplete-lista"></div></div></div>
+          <div class="field-wrap"><label for="nombre_proveedor">Nombre proveedor <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="nombre_proveedor" maxlength="70" autocomplete="off" placeholder="Buscar o escribir proveedor" title="Si no existe, escríbalo directamente." /><div id="listaProveedor" class="autocomplete-lista"></div></div></div>
+          <div class="field-wrap"><label for="tipo_compra">Tipo de compra / 606 <span style="color:var(--color-danger)">*</span></label><select id="tipo_compra"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="tipo_solicitud">Tipo solicitud</label><select id="tipo_solicitud"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap" id="wrapMontoEcf" style="display:none;"><label for="monto_ecf_visible">Monto eCF</label><input type="number" id="monto_ecf_visible" step="0.01" readonly style="background:#f1f5f9;color:#0e7490;font-weight:700;" /></div>
+        </div>
+        <!-- Fila 2: Forma de pago · Gastado por · Vehículo · Centro de costos · Proyecto · N° Orden de compra -->
+        <div class="form-row row-prov-2">
+          <div class="field-wrap"><label for="forma_pago">Forma de pago</label><select id="forma_pago"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="gastado_por">Gastado por</label><select id="gastado_por"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="vehiculo">Vehículo</label><select id="vehiculo"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap" id="wrapCentroCostos"><label for="centro_costos">Centro de costos</label><input type="text" id="centro_costos" maxlength="100" placeholder="Opcional" title="Opcional para compras directas" /></div>
+          <div class="field-wrap"><label for="proyecto">Proyecto</label><select id="proyecto"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="orden_compra_id">N° Orden de compra</label><input type="text" id="orden_compra_id" placeholder="Opcional" /></div>
+        </div>
+      </div>
+
+      <div class="section-card" id="seccionMontosManuales">
+        <div id="msgValidacionMontos" style="display:none;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:7px;margin-bottom:10px;background:#f8fafc;"></div>
+        <div class="section-title">Montos 606 <span id="lblMontosOrigen" style="font-weight:400;text-transform:none;font-size:11px;color:var(--color-muted);"></span></div>
+        <div id="wrapChkManoObra" style="display:none;margin-bottom:12px;align-items:center;gap:8px;"><input type="checkbox" id="chkManoObra" style="width:auto;cursor:pointer;" /><label for="chkManoObra" style="font-weight:600;font-size:12.5px;color:#334155;cursor:pointer;margin:0;">Incluye mano de obra / servicios</label></div>
+        <!-- Una sola fila de 8 campos -->
+        <div class="form-row row-montos">
+          <div class="field-wrap"><label for="subtotal_servicios_locales">Subtotal servicios locales</label><input type="number" id="subtotal_servicios_locales" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="subtotal_bienes_locales">Subtotal bienes locales</label><input type="number" id="subtotal_bienes_locales" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="impuesto_selectivo_consumo">Imp. selectivo consumo</label><input type="number" id="impuesto_selectivo_consumo" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="otros_impuestos_tasas">Tasas / otros impuestos</label><input type="number" id="otros_impuestos_tasas" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="monto_propina_legal">Propina legal</label><input type="number" id="monto_propina_legal" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="itbis_servicios_locales">ITBIS facturado en servicios locales</label><input type="number" id="itbis_servicios_locales" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="itbis_bienes_locales">ITBIS facturado en bienes locales</label><input type="number" id="itbis_bienes_locales" step="0.01" min="0" value="0" /></div>
+          <div class="field-wrap"><label for="itbis_total">ITBIS total</label><input type="number" id="itbis_total" step="0.01" min="0" value="0" readonly data-siempre-bloqueado="true" title="Se calcula sumando el ITBIS de servicios y el ITBIS de bienes." /></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="field-wrap"><label for="observacion">Observación</label><textarea id="observacion" style="min-height:64px;"></textarea></div>
+      </div>
+
+      <div class="section-card" id="seccionInsumos" style="display:none;">
+        <div class="section-title">Detalle de insumos / equipos</div>
+        <div class="tabla-detalle-wrap">
+          <table class="tabla-detalle">
+            <thead>
+              <tr>
+                <th style="width:24px;">#</th>
+                <th style="min-width:220px;">Insumo</th>
+                <th style="width:70px;">Unidad</th>
+                <th style="width:90px;" class="th-num">Cant. facturada</th>
+                <th style="width:90px;" class="th-num">Recibida inicial</th>
+                <th style="width:110px;" class="th-num">P. Unitario</th>
+                <th style="width:80px;">¿Inc. ITBIS?</th>
+                <th style="width:70px;">ITBIS</th>
+                <th style="width:110px;" class="th-num">Subtotal</th>
+                <th style="width:100px;" class="th-num">ITBIS línea</th>
+                <th style="width:110px;" class="th-num">Total línea</th>
+                <th style="width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyInsumos"></tbody>
+          </table>
+        </div>
+        <button type="button" id="btnAgregarInsumo" class="btn-agregar-fila">+ Agregar insumo</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Resumen financiero</div>
+        <div class="totales-606"><div class="totales-grid-606">
+          <div class="total-item"><span class="total-label">Subtotal bruto</span><span class="total-valor" id="disp_subtotal_bruto">—</span></div>
+          <div class="total-item"><span class="total-label">ITBIS</span><span class="total-valor" id="disp_itbis">—</span></div>
+          <div class="total-item"><span class="total-label">Otros imp.</span><span class="total-valor" id="disp_otros">—</span></div>
+          <div class="total-item total-final"><span class="total-label">Total factura</span><span class="total-valor" id="disp_total">—</span></div>
+          <div class="total-item" id="itemEcfMatch" style="display:none;"><span class="total-label">Monto eCF</span><span class="total-valor" id="disp_ecf_monto">—</span><span style="font-size:11px;" id="disp_ecf_estado"></span></div>
+        </div></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Adjunto de factura</div>
+        <div class="form-row cols-1"><div class="field-wrap"><label for="foto_factura">Imagen / foto de la factura</label><input type="file" id="foto_factura" accept="image/*,application/pdf" /><span class="field-hint">Puede tomar foto directamente desde el celular o seleccionar un archivo.</span><div class="adjunto-preview" id="adjuntoPreview"><a class="adjunto-link" id="adjuntoLink" href="#" target="_blank">Ver adjunto cargado</a></div></div></div>
+      </div>
+    </form>
+    <div id="mensajeFormulario" class="mensaje"></div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" id="btnCancelar" class="btn-form btn-cancel">✖ Cancelar</button>
+    <button type="button" id="btnBuscar" class="btn-form btn-search" title="Abre la pantalla 8011 — Factura Proveedor Modificar">🔍 Buscar</button>
+    <button type="button" id="btnModificar" class="btn-form btn-edit" style="display:none;">✏️ Modificar</button>
+    <button type="button" id="btnGuardar" class="btn-form btn-save">💾 Guardar factura</button>
+  </div>
+
+  <div id="modalQr" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:20px;max-width:480px;width:95%;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;"><strong style="font-size:14px;color:var(--color-primary);">⚡ Escanear QR del e-CF</strong><button type="button" id="btnCerrarQr" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--color-muted);">✖</button></div>
+      <div style="position:relative;border-radius:10px;overflow:hidden;background:#000;"><video id="videoQr" autoplay playsinline muted style="width:100%;display:block;max-height:320px;object-fit:cover;"></video><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;"><div style="width:200px;height:200px;border:3px solid #22d3ee;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);"></div></div></div>
+      <canvas id="canvasQr" style="display:none;"></canvas>
+      <p id="txtEstadoQr" style="font-size:12.5px;color:var(--color-muted);text-align:center;margin:0;">Apunte la cámara al código QR de la factura electrónica.</p>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+<script src="i01-base_conexion.js"></script>
+<script src="i02-auth.js"></script>
+<script src="base_menu_lat.js"></script>
+<script src="base_funcion.js"></script>
+
+<script>
+'use strict';
+
+// ============================================================
+// CONFIGURACIÓN GENERAL DE LA PANTALLA
+// ============================================================
+const SCHEMA             = 'dev_v2';
+// Código del formulario tal como está en mt_cat_opcion.formulario_codigo.
+const FORM_CODIGO         = 'FIN10_FACT_PROVEEDOR';
+const TABLA_FIN10        = 't_opr_fin10_factura_proveedor';
+const TABLA_FIN11        = 't_opr_fin11_factura_proveedor_dt';
+const TABLA_PROVEEDOR    = 'mt_opr_proveedor';
+const TABLA_INSUMO       = 'mt_opr_insumo';
+const RPC_GUARDAR        = 'fn_guardar_factura_proveedor';
+const RPC_MODIFICAR      = 'fn_modificar_factura_proveedor';
+const BUCKET_FACTURAS    = 'facturas-proveedor';
+const TASA_ITBIS_DEFAULT = 0.18;
+// Temporalmente deshabilitado.
+// const TIPOS_CON_DETALLE = ['COMPRA MATERIALES', 'COMPRA EQUIPO'];
+const TIPOS_CON_DETALLE = [];
+const VISTA_FORM         = 'vw_form_t_opr_fin10_factura_proveedor';
+
+const Estado = {
+  idActual: null,
+  esEcf: false,
+  montoEcf: null,
+  proveedorId: null,
+  facturaPagada: false,
+  modo: 'nuevo',
+  busquedaVisible: false
+};
+
+let _proveedores = [];
+let _insumos = [];
+let _streamQr = null;
+let _rafQr = null;
+
+// ============================================================
+// UTILIDADES LOCALES
+// ============================================================
+function soloNumeros(v) { return String(v || '').replace(/\D/g, ''); }
+function esEcf(ncf) { return /^[Ee]/.test(String(ncf || '').trim()); }
+function fmt(n) { return Number(n || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function num(v) { const n = Number(String(v ?? '').replace(/,/g, '')); return Number.isFinite(n) ? n : 0; }
+function normalizar(v) { return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+function fechaDdMmYyyyAIso(v) { const p = String(v || '').split('-'); return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : ''; }
+
+// ============================================================
+// PARSEAR URL ECF
+// ============================================================
+function parsearUrlEcf(url) {
+  try {
+    const u = new URL(url);
+    const g = k => { for (const [key, val] of u.searchParams.entries()) if (key.toLowerCase() === k.toLowerCase()) return val; return ''; };
+    return {
+      rnc_emisor: soloNumeros(g('RncEmisor')),
+      rnc_comprador: soloNumeros(g('RncComprador')),
+      encf: g('ENCF'),
+      fecha_emision: g('FechaEmision'),
+      monto_total: g('MontoTotal') ? Number(g('MontoTotal')) : null,
+      codigo_seguridad: g('CodigoSeguridad'),
+      url_consulta: url
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================
+// ESTADO VISUAL Y BLOQUEO
+// ============================================================
+function bloquearCamposEcf(bloquear) {
+  ['rnc_proveedor', 'nombre_proveedor'].forEach(id => {
+    const el = obtenerElemento(id);
+    if (!el) return;
+    el.readOnly = bloquear;
+    el.style.background = bloquear ? '#f1f5f9' : '';
+    el.style.color = bloquear ? '#475569' : '';
+  });
+  mostrarElemento('wrapMontoEcf', bloquear ? 'flex' : 'none');
+}
+
+function bloquearMontosSegunRegla() {
+  const tipo = getValor('tipo_compra') || '';
+  const tieneDetalle = TIPOS_CON_DETALLE.includes(tipo);
+  const chkManoObra = obtenerElemento('chkManoObra');
+  const incluyeManoObra = chkManoObra?.checked === true;
+
+  ['subtotal_bienes_locales'].forEach(id => {
+    const el = obtenerElemento(id);
+    if (!el) return;
+    el.readOnly = tieneDetalle;
+    el.style.background = tieneDetalle ? '#f1f5f9' : '';
+    el.style.color = tieneDetalle ? '#475569' : '';
+  });
+
+  const servicio = obtenerElemento('subtotal_servicios_locales');
+  if (servicio) {
+    const bloquearServicio = tieneDetalle && !incluyeManoObra;
+    servicio.readOnly = bloquearServicio;
+    servicio.style.background = bloquearServicio ? '#f1f5f9' : '';
+    servicio.style.color = bloquearServicio ? '#475569' : '';
+    if (bloquearServicio) servicio.value = '0';
+  }
+}
+
+function bloquearPantallaConsulta() {
+
+  // Bloquear formulario completo en modo consulta.
+  habilitarFormulario('formFactura', false, { excluir: ['factura_prov_id'] });
+
+  // Bloquear todas las líneas del detalle.
+  document.querySelectorAll('#tbodyInsumos input, #tbodyInsumos select, #tbodyInsumos button')
+    .forEach(el => { el.disabled = true; });
+
+  // Ocultar guardar mientras está en consulta.
+  obtenerElemento('btnGuardar').style.display = 'none';
+
+  // Mostrar modificar solo si la factura no tiene pago registrado.
+  obtenerElemento('btnModificar').style.display = Estado.facturaPagada ? 'none' : 'inline-flex';
+
+  // Mostrar campo activo.
+  obtenerElemento('wrapActivo').classList.add('visible');
+} 
+
+function habilitarPantallaModificar() { location.assign('8011-fact_prov_mod.html'); }
+
+function seleccionarProveedor(p) {
+  Estado.proveedorId = p.proveedor_id;
+  setValor('rnc_proveedor', soloNumeros(p.rnc));
+  setValor('nombre_proveedor', p.proveedor);
+  ocultarListaLocal('listaRnc');
+  ocultarListaLocal('listaProveedor');
+}
+
+function buscarProveedorPorRnc(rnc) {
+  const rncLimpio = soloNumeros(rnc);
+  const encontrado = _proveedores.find(p => soloNumeros(p.rnc) === rncLimpio);
+  if (encontrado) seleccionarProveedor(encontrado);
+}
+
+function ocultarListaLocal(id) {
+  const lista = obtenerElemento(id);
+  if (!lista) return;
+  lista.innerHTML = '';
+  lista.classList.remove('visible');
+}
+
+function mostrarListaProveedores(listaId, items) {
+  const lista = obtenerElemento(listaId);
+  if (!lista) return;
+  lista.innerHTML = '';
+  if (!items.length) { lista.classList.remove('visible'); return; }
+
+  items.slice(0, 15).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'autocomplete-item';
+    div.textContent = [p.proveedor,p.rnc,p.tipo_proveedor].filter(Boolean).join(' · ');
+    div.addEventListener('click', () => seleccionarProveedor(p));
+    lista.appendChild(div);
+  });
+  lista.classList.add('visible');
+}
+
+function manejarInputRnc(e) {
+  const texto = soloNumeros(e.target.value);
+  Estado.proveedorId = null;
+  if (!texto) { ocultarListaLocal('listaRnc'); return; }
+  const exacto = _proveedores.find(p => soloNumeros(p.rnc) === texto);
+  if (exacto) { seleccionarProveedor(exacto); return; }
+  mostrarListaProveedores('listaRnc', _proveedores.filter(p => soloNumeros(p.rnc).includes(texto)));
+}
+
+function manejarInputNombre(e) {
+  const texto = normalizar(e.target.value);
+  Estado.proveedorId = null;
+  if (!texto) { ocultarListaLocal('listaProveedor'); return; }
+  mostrarListaProveedores('listaProveedor', _proveedores.filter(p => normalizar(p.proveedor).includes(texto)));
+}
+
+// ============================================================
+// ECF QR Y MANUAL
+// ============================================================
+function activarModoEcf() {
+  Estado.esEcf = true;
+  setValor('tipo_ncf_hidden', 'ECF');
+  setValor('via_carga', 'QR_ECF');
+  obtenerElemento('badgeTipoNcf').innerHTML = '<span class="ecf-badge">e-CF Electrónico</span>';
+  mostrarElemento('bloqueEcf', 'block');
+  ocultarElemento('bloqueEcfManual');
+  bloquearCamposEcf(true);
+  recalcularTotales();
+}
+
+function activarModoEcfManual() {
+  Estado.esEcf = true;
+  setValor('tipo_ncf_hidden', 'ECF');
+  setValor('via_carga', 'MANUAL');
+  obtenerElemento('badgeTipoNcf').innerHTML = '<span class="manual-badge">✏️ e-CF Manual</span>';
+  ocultarElemento('bloqueEcf');
+  mostrarElemento('bloqueEcfManual', 'block');
+  bloquearCamposEcf(true);
+
+  const hoy = new Date();
+  const dd = String(hoy.getDate()).padStart(2, '0');
+  const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+  const yyyy = hoy.getFullYear();
+  const hoyStr = `${dd}-${mm}-${yyyy}`;
+  
+  if (!getValor('ecfm_fecha_emision')) setValor('ecfm_fecha_emision', hoyStr);
+  if (!getValor('ecfm_fecha_firma')) setValor('ecfm_fecha_firma', hoyStr);
+}
+
+function procesarEcf() {
+  const alerta = obtenerElemento('alertaEcf');
+  const url = getTexto('url_consulta_ecf');
+  if (!url) { alerta.className = 'alerta-ecf warn'; alerta.textContent = 'Pegue la URL del QR del e-CF.'; return; }
+
+  const datos = parsearUrlEcf(url);
+  if (!datos || !datos.rnc_emisor || !datos.encf) { alerta.className = 'alerta-ecf error'; alerta.textContent = 'La URL no contiene los datos requeridos del e-CF.'; return; }
+
+  const ncfIngresado = getTexto('numero_ncf').toUpperCase();
+  if (ncfIngresado && datos.encf.toUpperCase() !== ncfIngresado) {
+    alerta.className = 'alerta-ecf error';
+    alerta.textContent = `El NCF del QR (${datos.encf}) no coincide con el ingresado (${ncfIngresado}).`;
+    return;
+  }
+
+  setValor('numero_ncf', datos.encf);
+  setValor('rnc_proveedor', datos.rnc_emisor);
+  setValor('rnc_comprador', datos.rnc_comprador);
+  setValor('codigo_seguridad', datos.codigo_seguridad);
+  if (datos.monto_total !== null) { setValor('monto_bruto_ncf', datos.monto_total); setValor('monto_ecf_visible', datos.monto_total); Estado.montoEcf = datos.monto_total; }
+  if (datos.fecha_emision) { const iso = fechaDdMmYyyyAIso(datos.fecha_emision); if (iso) setValor('fecha_factura', iso); }
+  buscarProveedorPorRnc(datos.rnc_emisor);
+
+  alerta.className = 'alerta-ecf ok';
+  alerta.textContent = `e-CF procesado correctamente. NCF: ${datos.encf} | Monto: ${fmt(datos.monto_total)}`;
+  recalcularTotales();
+}
+
+function construirUrlDgii() {
+  const rnce = soloNumeros(getTexto('ecfm_rnc_emisor'));
+  const rncc = soloNumeros(getTexto('ecfm_rnc_comprador'));
+  const encf = getTexto('ecfm_encf');
+  const monto = getTexto('ecfm_monto');
+  const fe = getTexto('ecfm_fecha_emision');
+  const ff = getTexto('ecfm_fecha_firma');
+  let hf = getTexto('ecfm_hora_firma') || '00:00:00';
+  const cseg = getTexto('ecfm_codigo_seguridad');
+  if (!rnce || !rncc || !encf || !monto || !fe) return null;
+  if (hf.length === 5) hf += ':00';
+  return `https://ecf.dgii.gov.do/eCF/ConsultaTimbre?RncEmisor=${rnce}&RncComprador=${rncc}&ENCF=${encodeURIComponent(encf)}&FechaEmision=${fe}&MontoTotal=${parseFloat(monto).toFixed(2)}&FechaFirma=${encodeURIComponent(ff + ' ' + hf)}&CodigoSeguridad=${encodeURIComponent(cseg)}`;
+}
+
+function validarEcfManual() {
+  const alerta = obtenerElemento('alertaEcfManual');
+  const url = construirUrlDgii();
+  if (!url) { alerta.textContent = 'Complete RNC Emisor, RNC Comprador, e-NCF, Monto y Fecha Emisión.'; alerta.style.color = 'var(--color-danger)'; return; }
+  alerta.textContent = url;
+  alerta.style.color = 'var(--color-muted)';
+  alerta.style.fontSize = '10.5px';
+  alerta.style.wordBreak = 'break-all';
+  window.open(url, '_blank');
+}
+
+function usarDatosEcfManual() {
+  const rnce = soloNumeros(getTexto('ecfm_rnc_emisor'));
+  const rncc = soloNumeros(getTexto('ecfm_rnc_comprador'));
+  const encf = getTexto('ecfm_encf');
+  const monto = getNumero('ecfm_monto');
+  const cseg = getTexto('ecfm_codigo_seguridad');
+  const fe = getTexto('ecfm_fecha_emision');
+  const alerta = obtenerElemento('alertaEcfManual');
+
+  if (!rnce || !encf || !monto) { alerta.textContent = 'Complete al menos RNC Emisor, e-NCF y Monto.'; alerta.style.color = 'var(--color-danger)'; return; }
+
+  setValor('numero_ncf', encf);
+  setValor('rnc_proveedor', rnce);
+  setValor('rnc_comprador', rncc);
+  setValor('codigo_seguridad', cseg);
+  setValor('monto_bruto_ncf', monto);
+  setValor('monto_ecf_visible', monto);
+  setValor('url_consulta_ecf', construirUrlDgii());
+  Estado.montoEcf = monto;
+
+  const iso = fechaDdMmYyyyAIso(fe);
+  if (iso) setValor('fecha_factura', iso);
+  buscarProveedorPorRnc(rnce);
+  alerta.textContent = '✓ Datos aplicados al formulario.';
+  alerta.style.color = 'var(--color-success)';
+  recalcularTotales();
+}
+
+// ============================================================
+// DETALLE DE INSUMOS
+// ============================================================
+function agregarFilaInsumo(datos = {}) {
+  const tbody = obtenerElemento('tbodyInsumos');
+  const orden = tbody.querySelectorAll('tr').length + 1;
+  const fila = document.createElement('tr');
+  const opciones = _insumos.map(i => `<option value="${i.insumo_id}" data-unidad="${i.unidad_medida || ''}" data-desc="${i.descripcion || ''}" ${Number(datos.insumo_id) === Number(i.insumo_id) ? 'selected' : ''}>${i.codigo_insumo || ''} — ${i.descripcion || ''}</option>`).join('');
+
+  fila.dataset.facturaProvDtId = datos.factura_prov_dt_id || '';
+  // Campo 'recibida' viene directo de la vista (boolean). Para líneas nuevas siempre false.
+  fila.dataset.recibida = datos.recibida === true ? 'true' : 'false';
+  fila.innerHTML = `
+    <td><span style="font-size:11px;font-weight:700;color:var(--color-muted);">${orden}</span></td>
+    <td style="min-width:220px;"><select data-campo="insumo_id" style="min-width:200px;"><option value="">— Insumo —</option>${opciones}</select></td>
+    <td><input type="text" data-campo="unidad_medida" value="${datos.unidad_medida || ''}" maxlength="20" style="width:70px;" /></td>
+    <td><input type="number" data-campo="cantidad_facturada" value="${datos.cantidad_facturada || ''}" min="0" step="0.001" style="width:90px;" class="td-num" /></td>
+    <td><input type="number" data-campo="cantidad_recibida" value="${datos.cantidad_recibida || 0}" min="0" step="0.001" style="width:90px;" class="td-num" disabled title="La cantidad recibida siempre se registra desde Insumo Entrada." /></td>
+    <td><input type="number" data-campo="precio_unitario" value="${datos.precio_unitario || ''}" min="0" step="0.01" style="width:100px;" class="td-num" /></td>
+    <td style="text-align:center;"><label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:400;justify-content:center;"><input type="checkbox" data-campo="precio_incluye_itbis" ${datos.precio_incluye_itbis ? 'checked' : ''} style="width:auto;" />Inc.</label></td>
+    <td style="text-align:center;"><label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:400;justify-content:center;"><input type="checkbox" data-campo="aplica_itbis" ${datos.aplica_itbis === false ? '' : 'checked'} style="width:auto;" />18%</label></td>
+    <td class="td-num"><span data-subtotal class="subtotal-linea">—</span></td>
+    <td class="td-num"><span data-itbis-linea class="subtotal-linea">—</span></td>
+    <td class="td-num"><span data-total-linea class="subtotal-linea" style="color:var(--color-primary2);">—</span></td>
+    <td><button type="button" class="btn-eliminar-fila">✖</button></td>
+    <input type="hidden" data-campo="descripcion" value="${datos.descripcion || ''}" />
+  `;
+
+  fila.querySelector('[data-campo="insumo_id"]').addEventListener('change', function () {
+    const opt = this.options[this.selectedIndex];
+    fila.querySelector('[data-campo="unidad_medida"]').value = opt.dataset.unidad || '';
+    fila.querySelector('[data-campo="descripcion"]').value = opt.dataset.desc || '';
+    calcularFilaInsumo(fila);
+    recalcularTotales();
+  });
+
+  ['cantidad_facturada', 'precio_unitario'].forEach(campo => {
+    fila.querySelector(`[data-campo="${campo}"]`).addEventListener('input', () => { calcularFilaInsumo(fila); recalcularTotales(); });
+  });
+
+  ['aplica_itbis', 'precio_incluye_itbis'].forEach(campo => {
+    fila.querySelector(`[data-campo="${campo}"]`).addEventListener('change', () => { calcularFilaInsumo(fila); recalcularTotales(); });
+  });
+
+  fila.querySelector('.btn-eliminar-fila').addEventListener('click', () => { fila.remove(); renumerarFilasInsumo(); recalcularTotales(); });
+  tbody.appendChild(fila);
+  calcularFilaInsumo(fila);
+  return fila;
+}
+
+function renumerarFilasInsumo() {
+  document.querySelectorAll('#tbodyInsumos tr').forEach((fila, idx) => {
+    const span = fila.querySelector('td:first-child span');
+    if (span) span.textContent = String(idx + 1);
+  });
+}
+
+function calcularFilaInsumo(fila) {
+  const cantidad = num(fila.querySelector('[data-campo="cantidad_facturada"]')?.value);
+  const precio = num(fila.querySelector('[data-campo="precio_unitario"]')?.value);
+  const aplicaItbis = fila.querySelector('[data-campo="aplica_itbis"]')?.checked ?? true;
+  const precioIncluye = fila.querySelector('[data-campo="precio_incluye_itbis"]')?.checked ?? false;
+  const tasa = TASA_ITBIS_DEFAULT;
+
+  let precioSinItbis = 0;
+  let itbisUnitario = 0;
+  let subtotal = 0;
+  let itbis = 0;
+  let total = 0;
+
+  if (!aplicaItbis) {
+    precioSinItbis = redondear2(precio);
+    subtotal = redondear2(cantidad * precio);
+    total = subtotal;
+  } else if (precioIncluye) {
+    precioSinItbis = Math.round((precio / (1 + tasa)) * 10000) / 10000;
+    itbisUnitario = Math.round((precio - precioSinItbis) * 10000) / 10000;
+    subtotal = redondear2(cantidad * precioSinItbis);
+    itbis = redondear2(cantidad * itbisUnitario);
+    total = redondear2(cantidad * precio);
+  } else {
+    precioSinItbis = redondear2(precio);
+    itbisUnitario = Math.round((precio * tasa) * 10000) / 10000;
+    subtotal = redondear2(cantidad * precioSinItbis);
+    itbis = redondear2(cantidad * itbisUnitario);
+    total = redondear2(subtotal + itbis);
+  }
+
+  fila.dataset.subtotalLinea = subtotal;
+  fila.dataset.itbisLinea = itbis;
+  fila.dataset.totalLinea = total;
+  fila.querySelector('[data-subtotal]').textContent = subtotal > 0 ? fmt(subtotal) : '—';
+  fila.querySelector('[data-itbis-linea]').textContent = itbis > 0 ? fmt(itbis) : '—';
+  fila.querySelector('[data-total-linea]').textContent = total > 0 ? fmt(total) : '—';
+}
+
+function obtenerLineas() {
+  const lineas = [];
+
+  document.querySelectorAll('#tbodyInsumos tr').forEach(fila => {
+    const insumoId = fila.querySelector('[data-campo="insumo_id"]')?.value || null;
+    if (!insumoId) return;
+
+    lineas.push({
+      factura_prov_dt_id: fila.dataset.facturaProvDtId ? Number(fila.dataset.facturaProvDtId) : null,
+      insumo_id: Number(insumoId),
+      descripcion: fila.querySelector('[data-campo="descripcion"]')?.value || null,
+      unidad_medida: fila.querySelector('[data-campo="unidad_medida"]')?.value || null,
+      cantidad_facturada: num(fila.querySelector('[data-campo="cantidad_facturada"]')?.value),
+
+      // No se envía cantidad_recibida.
+      // Ese valor pertenece a Insumo Entrada y solo se muestra como informativo.
+      precio_unitario: num(fila.querySelector('[data-campo="precio_unitario"]')?.value),
+      aplica_itbis: fila.querySelector('[data-campo="aplica_itbis"]')?.checked ?? true,
+      precio_incluye_itbis: fila.querySelector('[data-campo="precio_incluye_itbis"]')?.checked ?? false,
+      tasa_itbis: TASA_ITBIS_DEFAULT,
+      observacion: null
+    });
+  });
+
+  return lineas;
+}
+
+function cargarLineasDesdeJson(lineas) {
+  obtenerElemento('tbodyInsumos').innerHTML = '';
+  (lineas || []).forEach(linea => agregarFilaInsumo(linea));
+  recalcularTotales();
+}
+
+// ============================================================
+// TOTALES Y TIPO COMPRA
+// ============================================================
+function manejarCambioTipoCompra() {
+  const tipo = getValor('tipo_compra') || '';
+  const tieneDetalle = TIPOS_CON_DETALLE.includes(tipo);
+
+  /*
+  // ==========================================================
+  // TEMPORALMENTE DESHABILITADO
+  // Antes, cuando el tipo de compra era:
+  //   - COMPRA MATERIALES
+  //   - COMPRA EQUIPO
+  // se mostraba el detalle para registrar los insumos.
+  //
+  // Se comenta para conservar toda la funcionalidad y poder
+  // reactivarla en el futuro sin perder el código.
+  // ==========================================================
+
+  mostrarElemento('seccionInsumos', tieneDetalle ? 'block' : 'none');
+  mostrarElemento('wrapChkManoObra', tieneDetalle ? 'flex' : 'none');
+
+  const lblOrigen = obtenerElemento('lblMontosOrigen');
+  if (lblOrigen) {
+    lblOrigen.textContent = tieneDetalle
+      ? '(Bienes e ITBIS calculados del detalle de insumos)'
+      : '';
+  }
+
+  mostrarElemento('wrapCentroCostos', tieneDetalle ? 'none' : 'block');
+  */
+
+  // Ocultar siempre el detalle de insumos.
+  mostrarElemento('seccionInsumos', 'none');
+  mostrarElemento('wrapChkManoObra', 'none');
+
+  setValor('lblMontosOrigen', '');
+
+  // El centro de costos permanece visible para todos los tipos.
+  mostrarElemento('wrapCentroCostos', 'block');
+
+  bloquearMontosSegunRegla();
+  recalcularTotales();
+}
+
+function recalcularTotales() {
+  const tipo = getValor('tipo_compra') || '';
+  const tieneDetalle = TIPOS_CON_DETALLE.includes(tipo);
+  let subtotalBienes = 0;
+
+  if (tieneDetalle) {
+    document.querySelectorAll('#tbodyInsumos tr').forEach(fila => {
+      subtotalBienes += num(fila.dataset.subtotalLinea);
+    });
+    subtotalBienes = redondear2(subtotalBienes);
+    setValor('subtotal_bienes_locales', subtotalBienes.toFixed(2));
+  }
+
+  const subtotalServ = getNumero('subtotal_servicios_locales') || 0;
+  const subtotalBien = tieneDetalle ? subtotalBienes : (getNumero('subtotal_bienes_locales') || 0);
+  const isc = getNumero('impuesto_selectivo_consumo') || 0;
+  const otros = getNumero('otros_impuestos_tasas') || 0;
+  const propina = getNumero('monto_propina_legal') || 0;
+  const itbisServicios = getNumero('itbis_servicios_locales') || 0;
+  const itbisBienes = getNumero('itbis_bienes_locales') || 0;
+  const itbis = redondear2(itbisServicios + itbisBienes);
+  const subtotalBruto = redondear2(subtotalServ + subtotalBien);
+  const total = redondear2(subtotalBruto + isc + otros + propina + itbis);
+
+  setValor('itbis_total', itbis.toFixed(2));
+  obtenerElemento('disp_subtotal_bruto').textContent = fmt(subtotalBruto);
+  obtenerElemento('disp_itbis').textContent = fmt(itbis);
+  obtenerElemento('disp_otros').textContent = fmt(isc + otros + propina);
+  obtenerElemento('disp_total').textContent = fmt(total);
+  actualizarItemEcfMatch(total);
+}
+
+function actualizarItemEcfMatch(total = null) {
+  const item = obtenerElemento('itemEcfMatch');
+  const dispMonto = obtenerElemento('disp_ecf_monto');
+  const dispEstado = obtenerElemento('disp_ecf_estado');
+  const msg = obtenerElemento('msgValidacionMontos');
+
+  if (!Estado.esEcf || Estado.montoEcf === null) {
+    item.style.display = 'none';
+    if (msg) msg.style.display = 'none';
+    return;
+  }
+
+  item.style.display = 'flex';
+  dispMonto.textContent = fmt(Estado.montoEcf);
+  if (total === null) return;
+
+  const diff = redondear2(Math.abs(total - Estado.montoEcf));
+  const coincide = diff <= 0.05;
+  dispMonto.style.color = coincide ? 'var(--color-success)' : 'var(--color-danger)';
+  dispEstado.textContent = coincide ? '✓ Coincide con eCF' : `✗ Diferencia: ${fmt(diff)}`;
+  dispEstado.style.color = coincide ? 'var(--color-success)' : 'var(--color-danger)';
+
+  if (msg) {
+    msg.textContent = coincide ? `✓ Sumatoria coincide con el monto eCF (${fmt(Estado.montoEcf)})` : `✗ Sumatoria (${fmt(total)}) difiere del monto eCF (${fmt(Estado.montoEcf)}) en ${fmt(diff)}`;
+    msg.style.color = coincide ? 'var(--color-success)' : 'var(--color-danger)';
+    msg.style.display = 'block';
+  }
+}
+
+// ============================================================
+// GUARDAR Y CARGAR FACTURA
+// ============================================================
+function validarFormulario() {
+  if (!validarRequerido([
+    { id: 'numero_ncf', nombre: 'NCF / e-NCF' },
+    { id: 'fecha_factura', nombre: 'Fecha factura' },
+    { id: 'rnc_proveedor', nombre: 'RNC proveedor' },
+    { id: 'nombre_proveedor', nombre: 'Nombre proveedor' },
+    { id: 'tipo_compra', nombre: 'Tipo de compra' }
+  ])) return false;
+
+  if (TIPOS_CON_DETALLE.includes(getValor('tipo_compra'))) {
+    const lineas = obtenerLineas();
+    if (!lineas.length) { mostrarMensaje('Debe agregar al menos un insumo.', 'error'); return false; }
+    for (const linea of lineas) {
+      if (linea.cantidad_facturada <= 0) { mostrarMensaje('Toda línea debe tener cantidad facturada mayor que cero.', 'error'); return false; }
+      const fila = [...document.querySelectorAll('#tbodyInsumos tr')]
+        .find(f => Number(f.dataset.facturaProvDtId || 0) === Number(linea.factura_prov_dt_id || 0));
+      const cantidadRecibida = num(fila?.querySelector('[data-campo="cantidad_recibida"]')?.value);
+      if (cantidadRecibida > 0 && linea.cantidad_facturada < cantidadRecibida) {
+        mostrarMensaje(`La cantidad facturada no puede ser menor que la cantidad recibida (${fmt(cantidadRecibida)}).`, 'error');
+        return false;
+      }
+      if (linea.precio_unitario < 0) { mostrarMensaje('El precio unitario no puede ser negativo.', 'error'); return false; }
+    }
+  }
+
+  if (Estado.esEcf && Estado.montoEcf !== null) {
+    const total = num(obtenerElemento('disp_total').textContent);
+    const diff = Math.abs(total - Estado.montoEcf);
+    if (diff > 0.05) { mostrarMensaje(`El total calculado (${fmt(total)}) no coincide con el monto e-CF (${fmt(Estado.montoEcf)}).`, 'error'); return false; }
+  }
+
+  return true;
+}
+
+function construirCabecera() {
+  return {
+    factura_prov_id: Estado.idActual,
+    proveedor_id: Estado.proveedorId || null,
+    rnc_proveedor: getValor('rnc_proveedor'),
+    nombre_proveedor: getValor('nombre_proveedor'),
+    numero_ncf: getValor('numero_ncf'),
+    tipo_ncf: getValor('tipo_ncf_hidden') || 'MANUAL',
+    fecha_factura: getValor('fecha_factura') || null,
+    fecha_vencimiento: getValor('fecha_vencimiento') || null,
+    tipo_compra: getValor('tipo_compra'),
+    forma_pago: getValor('forma_pago'),
+    gastado_por: getValor('gastado_por'),
+    tipo_solicitud: getValor('tipo_solicitud'),
+    vehiculo: getValor('vehiculo') || null,
+    proyecto: getValor('proyecto') || null,
+    orden_compra_id: getValor('orden_compra_id') ? parseInt(getValor('orden_compra_id'), 10) : null,
+    centro_costos: getValor('centro_costos') || null,
+    subtotal_servicios_locales: getNumero('subtotal_servicios_locales') || 0,
+    subtotal_bienes_locales: getNumero('subtotal_bienes_locales') || 0,
+    subtotal_bruto_factura: (getNumero('subtotal_servicios_locales') || 0) + (getNumero('subtotal_bienes_locales') || 0),
+    impuesto_selectivo_consumo: getNumero('impuesto_selectivo_consumo') || 0,
+    otros_impuestos_tasas: getNumero('otros_impuestos_tasas') || 0,
+    monto_propina_legal: getNumero('monto_propina_legal') || 0,
+    itbis_servicios_locales: getNumero('itbis_servicios_locales') || 0,
+    itbis_bienes_locales: getNumero('itbis_bienes_locales') || 0,
+    itbis_total: redondear2(
+      (getNumero('itbis_servicios_locales') || 0) +
+      (getNumero('itbis_bienes_locales') || 0)
+    ),
+    total_factura: num(obtenerElemento('disp_total').textContent),
+    monto_bruto_ncf: Estado.montoEcf,
+    total_factura_original: Estado.montoEcf,
+    url_consulta: getValor('url_consulta_ecf') || null,
+    codigo_seguridad: getValor('codigo_seguridad') || null,
+    rnc_comprador: getValor('rnc_comprador') || null,
+    via_carga: getValor('via_carga') || 'MANUAL',
+    adjunto_url: getValor('adjunto_url') || null,
+    estado: getValor('estado_visible') || 'Registrada',
+    observacion: getValor('observacion') || null,
+    activo: getValor('activo') !== false
+  };
+}
+
+async function guardarFactura() {
+  if (!validarFormulario()) return;
+
+  try {
+    recalcularTotales();
+
+    const cabecera = construirCabecera();
+    const lineas = TIPOS_CON_DETALLE.includes(cabecera.tipo_compra) ? obtenerLineas() : [];
+
+    const rpcUsar = Estado.idActual ? RPC_MODIFICAR : RPC_GUARDAR;
+
+    const resultado = await ejecutarRpc(
+      rpcUsar,
+      { p_cabecera: cabecera, p_lineas: lineas },
+      { schema: SCHEMA }
+    );
+
+    const res = Array.isArray(resultado) ? resultado[0] : resultado;
+    const facturaId = res.factura_prov_id;
+
+    // vehiculo y proyecto ya los guarda la RPC (SECURITY DEFINER).
+
+    if (obtenerElemento('foto_factura')?.files?.[0]) {
+      const ruta = await subirAdjunto(facturaId);
+
+      if (ruta) {
+        await ejecutarRpc(
+          'fn_actualizar_adjunto_factura_proveedor',
+          { p_factura_prov_id: facturaId, p_adjunto_url: ruta },
+          { schema: SCHEMA }
+        );
+      }
+    }
+
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Listo!',
+      text: `Factura No. ${facturaId} guardada correctamente.`,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#2563eb'
+    });
+
+    limpiarPantalla();
+
+  } catch (err) {
+    console.error('Error guardando factura:', err);
+    mostrarMensaje(err?.message || 'No fue posible guardar la factura.', 'error');
+  }
+}
+
+async function cargarFactura(facturaId, opciones = {}) {
+const reg = await obtenerRegistro(VISTA_FORM, {
+  schema: SCHEMA,
+  campoId: 'factura_prov_id',
+  valorId: facturaId,
+  select: '*'
+});
+  if (!reg) { mostrarMensaje('No se encontró la factura solicitada.', 'error'); return; }
+
+  // Leer los campos nuevos directamente desde FIN10 para no depender de que la vista
+  // vw_form_t_opr_fin10_factura_proveedor ya haya sido recreada con esas columnas.
+  const contextoFactura = await obtenerRegistro(TABLA_FIN10, {
+    schema: SCHEMA,
+    campoId: 'factura_prov_id',
+    valorId: facturaId,
+    select: 'factura_prov_id, vehiculo, proyecto'
+  });
+
+  Estado.idActual = reg.factura_prov_id;
+  Estado.proveedorId = reg.proveedor_id;
+  Estado.esEcf = reg.tipo_ncf === 'ECF' || esEcf(reg.numero_ncf);
+  Estado.montoEcf = reg.monto_bruto_ncf ?? reg.total_factura_original ?? null;
+  Estado.modo = 'consulta';
+  Estado.facturaPagada = await validarFacturaTienePago(reg.factura_prov_id);
+
+  setValor('factura_prov_id', reg.factura_prov_id);
+  setValor('numero_ncf', reg.numero_ncf);
+  setValor('fecha_factura', reg.fecha_factura);
+  setValor('fecha_vencimiento', reg.fecha_vencimiento);
+  setValor('estado_visible', reg.estado || 'Registrada');
+  setValor('rnc_proveedor', reg.rnc_proveedor);
+  setValor('nombre_proveedor', reg.nombre_proveedor);
+  setValor('tipo_compra', reg.tipo_compra);
+  setValor('forma_pago', reg.forma_pago);
+  setValor('gastado_por', reg.gastado_por);
+  setValor('tipo_solicitud', reg.tipo_solicitud);
+  setValor('vehiculo', contextoFactura?.vehiculo ?? reg.vehiculo);
+  setValor('proyecto', contextoFactura?.proyecto ?? reg.proyecto);
+  setValor('orden_compra_id', reg.orden_compra_id);
+  setValor('centro_costos', reg.centro_costos);
+  setValor('observacion', reg.observacion);
+  setValor('subtotal_servicios_locales', reg.subtotal_servicios_locales || 0);
+  setValor('subtotal_bienes_locales', reg.subtotal_bienes_locales || 0);
+  setValor('impuesto_selectivo_consumo', reg.impuesto_selectivo_consumo || 0);
+  setValor('otros_impuestos_tasas', reg.otros_impuestos_tasas || 0);
+  setValor('monto_propina_legal', reg.monto_propina_legal || 0);
+  setValor('itbis_servicios_locales', reg.itbis_servicios_locales || 0);
+  setValor(
+    'itbis_bienes_locales',
+    reg.itbis_bienes_locales ?? (
+      reg.itbis_servicios_locales == null ? (reg.itbis_total || 0) : 0
+    )
+  );
+  setValor(
+    'itbis_total',
+    redondear2(
+      (Number(reg.itbis_servicios_locales) || 0) +
+      (Number(reg.itbis_bienes_locales ?? (reg.itbis_servicios_locales == null ? reg.itbis_total : 0)) || 0)
+    ).toFixed(2)
+  );
+  setValor('monto_bruto_ncf', reg.monto_bruto_ncf);
+  setValor('rnc_comprador', reg.rnc_comprador);
+  setValor('codigo_seguridad', reg.codigo_seguridad);
+  setValor('url_consulta_ecf', reg.url_consulta);
+  setValor('adjunto_url', reg.adjunto_url);
+  setValor('tipo_ncf_hidden', reg.tipo_ncf || 'MANUAL');
+  setValor('via_carga', reg.via_carga || 'MANUAL');
+  setValor('activo', reg.activo !== false);
+
+  if (Estado.esEcf) {
+    obtenerElemento('badgeTipoNcf').innerHTML = '<span class="ecf-badge">e-CF</span>';
+    bloquearCamposEcf(true);
+  } else {
+    obtenerElemento('badgeTipoNcf').innerHTML = '<span class="manual-badge">Manual</span>';
+    bloquearCamposEcf(false);
+  }
+
+  manejarCambioTipoCompra();
+  cargarLineasDesdeJson(reg.lineas);
+  recalcularTotales();
+
+  if (reg.adjunto_url) {
+    obtenerElemento('adjuntoPreview').style.display = 'block';
+    obtenerElemento('adjuntoLink').textContent = reg.adjunto_url;
+  }
+
+  if (opciones.bloquear !== false) bloquearPantallaConsulta();
+  mostrarMensaje(Estado.facturaPagada ? 'Factura cargada. Tiene pagos registrados; no puede modificarse.' : 'Factura cargada. Presione Modificar para editar.', 'info', { swal: false });
+}
+
+async function validarFacturaTienePago() { return false; }
+
+// ============================================================
+// BÚSQUEDA
+// ============================================================
+function toggleBusqueda() {
+  Estado.busquedaVisible = !Estado.busquedaVisible;
+  const bloque = document.getElementById('bloqueBusqueda');
+  if (bloque) bloque.style.display = Estado.busquedaVisible ? 'block' : 'none';
+  if (!Estado.busquedaVisible) {
+    setValor('txtBusqueda', '');
+    ocultarListaBusqueda();
+  } else {
+    setTimeout(() => document.getElementById('txtBusqueda')?.focus(), 80);
+  }
+}
+
+function ocultarListaBusqueda() {
+  const lista = document.getElementById('listaBusqueda');
+  if (lista) { lista.innerHTML = ''; lista.style.display = 'none'; lista.classList.remove('visible'); }
+}
+
+async function buscarFacturas(termino) {
+  if (!termino || termino.trim().length < 2) { ocultarListaBusqueda(); return; }
+  const terminoLimpio = termino.trim().replace(/^#/, '');
+
+  const { data, error } = await window.sb.schema(SCHEMA)
+    .from(VISTA_FORM)
+    .select('factura_prov_id, numero_ncf, nombre_proveedor, rnc_proveedor, fecha_factura, estado')
+    .or(`numero_ncf.ilike.%${terminoLimpio}%,nombre_proveedor.ilike.%${terminoLimpio}%,rnc_proveedor.ilike.%${terminoLimpio}%`)
+    .order('factura_prov_id', { ascending: false })
+    .limit(15);
+
+  if (error) { console.error('Error búsqueda factura:', error); return; }
+
+  renderizarLista({
+    listaId:    'listaBusqueda',
+    resultados: data || [],
+    texto:      reg => `#${reg.factura_prov_id} — ${reg.numero_ncf} | ${reg.nombre_proveedor} [${reg.estado || ''}]`,
+    claseItem:  'lista-busqueda-item',
+    claseVacio: 'lista-busqueda-item sin-resultados',
+    textoVacio: 'Sin resultados',
+    alSeleccionar: async reg => {
+      setValor('txtBusqueda', '');
+      Estado.busquedaVisible = false;
+      const bloque = document.getElementById('bloqueBusqueda');
+      if (bloque) bloque.style.display = 'none';
+      ocultarListaBusqueda();
+      await cargarFactura(reg.factura_prov_id, { bloquear: true });
+    }
+  });
+
+  // Forzar visibilidad ya que el div usa style.display (no clase CSS)
+  const lista = document.getElementById('listaBusqueda');
+  if (lista && lista.children.length) lista.style.display = 'block';
+}
+
+// ============================================================
+// ADJUNTO
+// ============================================================
+function nombreAdjunto(facturaId, rnc, ncf) {
+  const ahora = new Date();
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+  const anio = ahora.getFullYear();
+  const id = String(facturaId || '000').padStart(6, '0');
+  const rncL = String(rnc || '').replace(/\D/g, '');
+  const ncfL = String(ncf || '').replace(/[^a-zA-Z0-9]/g, '');
+  const archivo = obtenerElemento('foto_factura')?.files?.[0];
+  const ext = archivo?.name?.split('.').pop() || 'jpg';
+  return `${window.APP_USUARIO.usuario_id}/${mes}_${anio}/${id}_${rncL}_${ncfL}.${ext}`;
+}
+
+async function subirAdjunto(facturaId) {
+  const archivo = obtenerElemento('foto_factura')?.files?.[0];
+  if (!archivo) return null;
+  const ruta = nombreAdjunto(facturaId, getValor('rnc_proveedor'), getValor('numero_ncf'));
+  const { error } = await window.sb.storage.from(BUCKET_FACTURAS).upload(ruta, archivo, { cacheControl: '3600', upsert: true });
+  if (error) throw new Error('No fue posible subir el adjunto.');
+  return ruta;
+}
+
+// ============================================================
+// LIMPIAR PANTALLA
+// ============================================================
+function limpiarPantalla() {
+  Estado.idActual = null;
+  Estado.esEcf = false;
+  Estado.montoEcf = null;
+  Estado.proveedorId = null;
+  Estado.facturaPagada = false;
+  Estado.modo = 'nuevo';
+  obtenerElemento('btnAgregarInsumo').style.display = 'inline-flex';
+  limpiarFormulario('formFactura');
+  setValor('via_carga', 'MANUAL');
+  setValor('tipo_ncf_hidden', 'MANUAL');
+  setValor('estado_visible', 'Registrada');
+  setValor('activo', true);
+  obtenerElemento('tbodyInsumos').innerHTML = '';
+  obtenerElemento('badgeTipoNcf').innerHTML = '';
+  ocultarElemento('bloqueEcf');
+  ocultarElemento('bloqueEcfManual');
+  ocultarElemento('wrapMontoEcf');
+  ocultarElemento('seccionInsumos');
+  ocultarElemento('itemEcfMatch');
+  ocultarElemento('adjuntoPreview');
+  obtenerElemento('wrapActivo').classList.remove('visible');
+  obtenerElemento('btnGuardar').style.display = 'inline-flex';
+  obtenerElemento('btnModificar').style.display = 'none';
+  habilitarFormulario('formFactura', true, { excluir: ['estado_visible', 'monto_bruto_ncf', 'rnc_comprador', 'codigo_seguridad'] });
+  ['disp_subtotal_bruto', 'disp_itbis', 'disp_otros', 'disp_total'].forEach(id => { obtenerElemento(id).textContent = '—'; });
+  limpiarMensaje();
+  mostrarMensaje('Complete los datos de la factura.', 'info', { swal: false });
+}
+
+// ============================================================
+// CÁMARA QR
+// ============================================================
+function abrirModalQr() {
+  abrirModal('modalQr');
+  obtenerElemento('txtEstadoQr').textContent = 'Iniciando cámara...';
+  iniciarCamara();
+}
+
+function cerrarModalQr() {
+  cerrarModal('modalQr');
+  detenerCamara();
+}
+
+async function iniciarCamara() {
+  try {
+    _streamQr = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } });
+    const video = obtenerElemento('videoQr');
+    video.srcObject = _streamQr;
+    video.onloadedmetadata = () => { video.play(); obtenerElemento('txtEstadoQr').textContent = 'Apunte al código QR de la factura electrónica.'; escanearFrame(); };
+  } catch (err) {
+    console.error('Error cámara:', err);
+    obtenerElemento('txtEstadoQr').textContent = 'No se pudo acceder a la cámara. Verifique los permisos.';
+  }
+}
+
+function detenerCamara() {
+  if (_rafQr) { cancelAnimationFrame(_rafQr); _rafQr = null; }
+  if (_streamQr) { _streamQr.getTracks().forEach(t => t.stop()); _streamQr = null; }
+  obtenerElemento('videoQr').srcObject = null;
+}
+
+function escanearFrame() {
+  const video = obtenerElemento('videoQr');
+  const canvas = obtenerElemento('canvasQr');
+  if (!video.videoWidth) { _rafQr = requestAnimationFrame(escanearFrame); return; }
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+  if (code?.data) {
+    const texto = code.data.trim();
+    if (texto.toLowerCase().includes('ecf.dgii.gov.do') || texto.toLowerCase().includes('rncemisor')) {
+      setValor('url_consulta_ecf', texto);
+      cerrarModalQr();
+      setTimeout(procesarEcf, 300);
+      return;
+    }
+    obtenerElemento('txtEstadoQr').textContent = 'QR detectado, pero no parece ser un e-CF válido.';
+  }
+  _rafQr = requestAnimationFrame(escanearFrame);
+}
+
+// ============================================================
+// CATÁLOGOS Y LISTAS DE LA PANTALLA
+// Se utilizan las funciones genéricas de base_funcion.js.
+// ============================================================
+async function cargarProyectosFormulario() {
+      return cargarCatalogo({schema: SCHEMA, selectId:'proyecto', formularioCodigo:FORM_CODIGO, catalogoCodigo:'PROYECTO', valor:'valor', texto:'opcion_nombre'});
+    }
+
+async function cargarCatalogosFormulario() {
+  await Promise.all([
+    cargarCatalogo({
+      schema: SCHEMA,
+      selectId: 'tipo_compra',
+      formularioCodigo: FORM_CODIGO,
+      catalogoCodigo: 'TIPO_COMPRA',
+      valor: 'valor',
+      texto: 'opcion_nombre'
+    }),
+    cargarCatalogo({
+      schema: SCHEMA,
+      selectId: 'forma_pago',
+      formularioCodigo: FORM_CODIGO,
+      catalogoCodigo: 'FORMA_PAGO',
+      valor: 'valor',
+      texto: 'opcion_nombre'
+    }),
+    cargarCatalogo({
+      schema: SCHEMA,
+      selectId: 'gastado_por',
+      formularioCodigo: FORM_CODIGO,
+      catalogoCodigo: 'GASTADO_POR',
+      valor: 'valor',
+      texto: 'opcion_nombre'
+    }),
+    cargarCatalogo({
+      schema: SCHEMA,
+      selectId: 'tipo_solicitud',
+      formularioCodigo: FORM_CODIGO,
+      catalogoCodigo: 'TIPO_SOLICITUD',
+      valor: 'valor',
+      texto: 'opcion_nombre'
+    }),
+    cargarCatalogo({
+      schema: SCHEMA,
+      selectId: 'vehiculo',
+      formularioCodigo: FORM_CODIGO,
+      catalogoCodigo: 'VEHICULO',
+      valor: 'valor',
+      texto: 'opcion_nombre'
+    }),
+    cargarProyectosFormulario()
+  ]);
+}
+
+
+async function aplicarPermisoGuardar() { return !!window.APP_USUARIO; }
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+async function inicializarPantalla() {
+  try {
+    const [insumos] = await Promise.all([
+      Promise.resolve([]),
+      cargarProveedores()
+    ]);
+    _insumos = insumos || [];
+
+    await cargarCatalogosFormulario();
+
+    onClick('btnActivarEcf', activarModoEcf);
+    onClick('btnActivarEcfManual', activarModoEcfManual);
+    onClick('btnValidarEcfManual', validarEcfManual);
+    onClick('btnUsarEcfManual', usarDatosEcfManual);
+    onClick('btnEscanearQr', abrirModalQr);
+    onClick('btnCerrarQr', cerrarModalQr);
+    onClick('btnProcesarEcf', procesarEcf);
+    onClick('btnAgregarInsumo', () => agregarFilaInsumo({}));
+    onClick('btnCancelar', limpiarPantalla);
+    // Cambio de modalidad: la búsqueda/modificación se realiza en la pantalla 8011.
+    onClick('btnBuscar', () => { window.location.href = '8011-fact_prov_mod.html'; });
+    onClick('btnModificar', habilitarPantallaModificar);
+    onClick('btnGuardar', guardarFactura);
+
+    configurarBusquedaEnterBlur({ inputId: 'txtBusqueda', alBuscar: buscarFacturas });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#bloqueBusqueda')) ocultarListaBusqueda();
+    });
+
+    obtenerElemento('rnc_proveedor').addEventListener('input', manejarInputRnc);
+    obtenerElemento('rnc_proveedor').addEventListener('blur', e => { setTimeout(() => ocultarListaLocal('listaRnc'), 200); buscarProveedorPorRnc(e.target.value); });
+    obtenerElemento('nombre_proveedor').addEventListener('input', manejarInputNombre);
+    obtenerElemento('nombre_proveedor').addEventListener('blur', () => setTimeout(() => ocultarListaLocal('listaProveedor'), 200));
+    obtenerElemento('tipo_compra').addEventListener('change', manejarCambioTipoCompra);
+    obtenerElemento('chkManoObra').addEventListener('change', () => { bloquearMontosSegunRegla(); recalcularTotales(); });
+    ['subtotal_servicios_locales', 'subtotal_bienes_locales', 'impuesto_selectivo_consumo', 'otros_impuestos_tasas', 'monto_propina_legal', 'itbis_servicios_locales', 'itbis_bienes_locales'].forEach(id => obtenerElemento(id)?.addEventListener('input', recalcularTotales));
+    document.addEventListener('click', e => { if (!e.target.closest('.autocomplete-wrap')) { ocultarListaLocal('listaRnc'); ocultarListaLocal('listaProveedor'); } });
+
+    const params = new URLSearchParams(window.location.search);
+    const idUrl = params.get('factura_prov_id');
+    if (idUrl) { location.replace('8011-fact_prov_mod.html'); return; }
+    else limpiarPantalla();
+
+    console.log('5010-factura_proveedor limpio inicializado.');
+  } catch (err) {
+    console.error('Error inicializando:', err);
+    mostrarMensaje('Error inicializando la pantalla. Revise consola.', 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => { if (await window.authReady) await inicializarPantalla(); });
+</script>
+</body>
+</html>
