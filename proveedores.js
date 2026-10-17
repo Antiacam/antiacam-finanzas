@@ -3,7 +3,7 @@ window.Proveedores = (() => {
   const pendientes = new Map();
   async function buscar(campo, texto, exacto = false) {
     const limpio = campo === 'rnc' ? String(texto).replace(/\D/g, '') : String(texto).trim();
-    if (limpio.length < (campo === 'rnc' ? 2 : 3)) return [];
+    if (limpio.length < 2) return [];
     let query = DB.tabla('mt_opr_proveedor').select('proveedor_id,rnc,proveedor')
       .eq('activo', true).eq('eliminado', false).eq('estado', true);
     if (campo === 'rnc') query = exacto ? query.eq('rnc', limpio) : query.like('rnc', limpio + '%');
@@ -12,7 +12,7 @@ window.Proveedores = (() => {
     if (error) throw error;
     return data || [];
   }
-  function agendar(campo, texto, listaId, mostrar) {
+  function agendar(campo, texto, listaId, mostrar, demora = 250) {
     const anterior = pendientes.get(campo);
     if (anterior) clearTimeout(anterior.timer);
     const solicitud = {};
@@ -24,7 +24,7 @@ window.Proveedores = (() => {
         const rows = await buscar(campo, texto);
         if (pendientes.get(campo) !== solicitud) return;
         mostrar(listaId, rows);
-        if (!rows.length && String(texto).trim().length >= 3 && lista) {
+        if (!rows.length && String(texto).trim().length >= 2 && lista) {
           lista.replaceChildren();
           const aviso = document.createElement('div');
           aviso.className = 'autocomplete-item';
@@ -40,15 +40,27 @@ window.Proveedores = (() => {
         lista.append(aviso); lista.classList.add('visible');
         console.error('Consulta de proveedores:', error);
       }
-    }, 250);
+    }, demora);
   }
-  return { buscar, agendar };
+  function configurarEnter(input, campo, listaId, mostrar) {
+    input.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      agendar(campo, input.value, listaId, mostrar, 0);
+    });
+  }
+  return { buscar, agendar, configurarEnter };
 })();
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!await window.authReady || !window.APP_PERMISOS.some(p => p.puede_insert)) return;
+  if (!await window.authReady) return;
   const nombre = document.getElementById('nombre_proveedor');
   if (!nombre) return;
+  Proveedores.configurarEnter(nombre, 'proveedor', 'listaProveedor', mostrarListaProveedores);
+  Proveedores.configurarEnter(document.getElementById('rnc_proveedor'), 'rnc', 'listaRnc', mostrarListaProveedores);
+  nombre.placeholder = 'Escriba 2 letras o más y pulse Enter';
+  if (!window.APP_PERMISOS.some(p => p.puede_insert)) return;
   const button = document.createElement('button');
   button.type = 'button'; button.id = 'btnCrearProveedor';
   button.className = 'btn-mini proveedor-crear'; button.textContent = 'Crear proveedor';
