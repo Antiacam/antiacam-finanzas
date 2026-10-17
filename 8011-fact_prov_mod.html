@@ -463,6 +463,7 @@
 <script src="i02-auth.js"></script>
 <script src="base_menu_lat.js"></script>
 <script src="base_funcion.js"></script>
+<script src="proveedores.js"></script>
 
 <script>
 'use strict';
@@ -609,7 +610,8 @@ async function cargarProveedores() {
     _proveedores = await consultarTabla(TABLA_PROVEEDOR, {
       schema: SCHEMA,
       select: 'proveedor_id, rnc, proveedor',
-      orden: 'proveedor'
+      orden: 'proveedor',
+      limite: 20
     });
   } catch (err) {
     console.warn('No se pudieron cargar proveedores:', err);
@@ -648,16 +650,14 @@ function manejarInputProveedor(e) {
   Estado.proveedorId = null;
   const texto = normalizar(e.target.value);
   if (!texto) { ocultarListaLocal('listaProveedor'); return; }
-  mostrarListaProveedores('listaProveedor',
-    _proveedores.filter(p => normalizar(`${p.proveedor || ''} ${p.rnc || ''}`).includes(texto)));
+  Proveedores.agendar('proveedor', e.target.value, 'listaProveedor', mostrarListaProveedores);
 }
 
 function manejarInputRnc(e) {
   Estado.proveedorId = null;
   const texto = soloNumeros(e.target.value);
   if (!texto) { ocultarListaLocal('listaRnc'); return; }
-  mostrarListaProveedores('listaRnc',
-    _proveedores.filter(p => soloNumeros(p.rnc).includes(texto)));
+  Proveedores.agendar('rnc', texto, 'listaRnc', mostrarListaProveedores);
 }
 
 // ============================================================

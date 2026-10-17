@@ -331,6 +331,7 @@
 <script src="i02-auth.js"></script>
 <script src="base_menu_lat.js"></script>
 <script src="base_funcion.js"></script>
+<script src="proveedores.js"></script>
 
 <script>
 'use strict';
@@ -467,10 +468,13 @@ function seleccionarProveedor(p) {
   ocultarListaLocal('listaProveedor');
 }
 
-function buscarProveedorPorRnc(rnc) {
+async function buscarProveedorPorRnc(rnc) {
   const rncLimpio = soloNumeros(rnc);
-  const encontrado = _proveedores.find(p => soloNumeros(p.rnc) === rncLimpio);
-  if (encontrado) seleccionarProveedor(encontrado);
+  if (rncLimpio.length !== 9) return;
+  try {
+    const [encontrado] = await Proveedores.buscar('rnc', rncLimpio, true);
+    if (encontrado && soloNumeros(getValor('rnc_proveedor')) === rncLimpio) seleccionarProveedor(encontrado);
+  } catch (error) { console.error('Consulta de RNC:', error); }
 }
 
 function ocultarListaLocal(id) {
@@ -500,16 +504,14 @@ function manejarInputRnc(e) {
   const texto = soloNumeros(e.target.value);
   Estado.proveedorId = null;
   if (!texto) { ocultarListaLocal('listaRnc'); return; }
-  const exacto = _proveedores.find(p => soloNumeros(p.rnc) === texto);
-  if (exacto) { seleccionarProveedor(exacto); return; }
-  mostrarListaProveedores('listaRnc', _proveedores.filter(p => soloNumeros(p.rnc).includes(texto)));
+  Proveedores.agendar('rnc', texto, 'listaRnc', mostrarListaProveedores);
 }
 
 function manejarInputNombre(e) {
   const texto = normalizar(e.target.value);
   Estado.proveedorId = null;
   if (!texto) { ocultarListaLocal('listaProveedor'); return; }
-  mostrarListaProveedores('listaProveedor', _proveedores.filter(p => normalizar(p.proveedor).includes(texto)));
+  Proveedores.agendar('proveedor', e.target.value, 'listaProveedor', mostrarListaProveedores);
 }
 
 // ============================================================
@@ -1259,7 +1261,8 @@ async function cargarProveedores() {
   _proveedores = await consultarTabla(TABLA_PROVEEDOR, {
     schema: SCHEMA,
     select: 'proveedor_id, rnc, proveedor',
-    orden: 'proveedor'
+    orden: 'proveedor',
+    limite: 20
   });
 }
 

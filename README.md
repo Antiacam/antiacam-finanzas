@@ -1,5 +1,9 @@
 # Antiacam · Finanzas
 
+Sitio: https://antiacam.github.io/antiacam-finanzas/
+
+En ambas pantallas, «Crear proveedor» permite registrar un RNC de nueve dígitos y su razón social, y seleccionarlo en la factura. Los RNC duplicados se rechazan sin sobrescribir el proveedor existente. La búsqueda consulta Supabase por RNC o nombre y limita las sugerencias a quince registros; no descarga el padrón completo al navegador.
+
 Las páginas protegidas validan el usuario con Supabase Auth, su estado activo, MFA y el permiso de lectura del formulario antes de inicializarse. La sesión se vuelve a comprobar al regresar a la pestaña y las sesiones cerradas ocultan la pantalla y vuelven al acceso. El menú muestra únicamente los formularios autorizados. Ejecutar `npm run check` para verificar sintaxis, funciones y los casos de autorización.
 
 Al tratarse de alojamiento estático, el HTML es público. La confidencialidad de datos y archivos depende de las políticas RLS de Supabase; el control de navegación del navegador no sustituye esas políticas. La conexión actual apunta a `zrnoumlgkmcnjgtslacs`; verificar Auth y RLS en ese proyecto antes de publicar.
