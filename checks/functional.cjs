@@ -22,3 +22,32 @@ const secondInline=[...second.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].
 vm.runInContext(secondInline,secondContext);
 assert.equal(vm.runInContext('calcularTotalFactura()',secondContext),372);
 console.log('Pantalla de modificación: total correcto sin duplicar el subtotal.');
+
+// Reproduce la carga inicial para detectar funciones ausentes antes de publicar.
+(async () => {
+  const proveedores=[{proveedor_id:1,rnc:'123456789',proveedor:'Proveedor prueba'}];
+  const catalogos=[],mensajes=[],botones=new Map();
+  context.consultarTabla=async(tabla,config)=>{
+    assert.equal(tabla,'mt_opr_proveedor');
+    assert.equal(config.schema,'dev_v2');
+    assert.equal(config.select,'proveedor_id, rnc, proveedor');
+    return proveedores;
+  };
+  context.cargarCatalogo=async config=>{catalogos.push(config.catalogoCodigo);};
+  context.onClick=(id,handler)=>{assert.equal(typeof handler,'function');botones.set(id,handler);};
+  context.configurarBusquedaEnterBlur=config=>assert.equal(typeof config.alBuscar,'function');
+  context.limpiarFormulario=()=>{};
+  context.habilitarFormulario=()=>{};
+  context.limpiarMensaje=()=>{};
+  context.mostrarMensaje=(texto,tipo)=>mensajes.push({texto,tipo});
+  context.window.location={search:''};
+  const originalNode=context.obtenerElemento;
+  context.obtenerElemento=id=>{const element=originalNode(id);element.addEventListener=()=>{};return element;};
+  await vm.runInContext('inicializarPantalla()',context);
+  assert.equal(vm.runInContext('_proveedores',context),proveedores);
+  assert.equal(catalogos.length,6);
+  assert.equal(botones.has('btnGuardar'),true);
+  assert.equal(mensajes.some(message=>message.tipo==='error'),false);
+  assert.equal(mensajes.some(message=>message.texto==='Complete los datos de la factura.'),true);
+  console.log('Inicialización completa: proveedores, seis catálogos, eventos y formulario listos.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

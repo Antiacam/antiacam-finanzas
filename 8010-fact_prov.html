@@ -1255,6 +1255,14 @@ function escanearFrame() {
 // CATÁLOGOS Y LISTAS DE LA PANTALLA
 // Se utilizan las funciones genéricas de base_funcion.js.
 // ============================================================
+async function cargarProveedores() {
+  _proveedores = await consultarTabla(TABLA_PROVEEDOR, {
+    schema: SCHEMA,
+    select: 'proveedor_id, rnc, proveedor',
+    orden: 'proveedor'
+  });
+}
+
 async function cargarProyectosFormulario() {
       return cargarCatalogo({schema: SCHEMA, selectId:'proyecto', formularioCodigo:FORM_CODIGO, catalogoCodigo:'PROYECTO', valor:'valor', texto:'opcion_nombre'});
     }
