@@ -65,11 +65,11 @@
     .form-row.row-montos { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px; align-items: end; }
     /* Fila 1 proporcional al tamaño: RNC 15 · Nombre 70 · Tipo compra 70 · Tipo solicitud 35 */
     .form-row.row-prov-1 { grid-template-columns: minmax(150px, 15fr) minmax(0, 70fr) minmax(0, 70fr); grid-auto-flow: column; grid-auto-columns: minmax(130px, 24fr); align-items: start; }
-    .form-row.row-prov-2 { grid-template-columns: 1fr 1fr 1fr 2.4fr 1.1fr; align-items: start; }
+    .form-row.row-prov-2 { grid-template-columns: 1fr 2fr; align-items: start; }
     @media (max-width: 1100px) {
       .form-row.row-montos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .form-row.row-prov-1 { grid-template-columns: 1fr 2fr; grid-auto-flow: row; grid-auto-columns: auto; }
-      .form-row.row-prov-2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .form-row.row-prov-2 { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 700px) {
       .form-row.row-montos, .form-row.row-prov-1, .form-row.row-prov-2 { grid-template-columns: 1fr; }
@@ -230,13 +230,10 @@
           <div class="field-wrap"><label for="tipo_compra">Tipo de bienes y servicios / 606 <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><select id="tipo_compra" required><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap" id="wrapMontoEcf" style="display:none;"><label for="monto_ecf_visible">Monto eCF</label><input type="number" id="monto_ecf_visible" step="0.01" readonly style="background:#f1f5f9;color:#0e7490;font-weight:700;" /></div>
         </div>
-        <!-- Fila 2: Forma de pago · Vehículo · Centro de costos · Proyecto · N° Orden de compra -->
+        <!-- Fila 2: Forma de pago · Proyecto -->
         <div class="form-row row-prov-2">
           <div class="field-wrap"><label for="forma_pago">Forma de pago <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><select id="forma_pago" required><option value="">— Seleccione —</option></select></div>
-          <div class="field-wrap"><label for="vehiculo">Vehículo</label><select id="vehiculo"><option value="">— Seleccione —</option></select></div>
-          <div class="field-wrap" id="wrapCentroCostos"><label for="centro_costos">Centro de costos</label><input type="text" id="centro_costos" maxlength="100" placeholder="Opcional" title="Opcional para compras directas" /></div>
           <div class="field-wrap"><label for="proyecto">Proyecto</label><select id="proyecto"><option value="">— Seleccione —</option></select></div>
-          <div class="field-wrap"><label for="orden_compra_id">N° Orden de compra</label><input type="text" id="orden_compra_id" placeholder="Opcional" /></div>
         </div>
       </div>
 
@@ -787,7 +784,6 @@ function manejarCambioTipoCompra() {
       : '';
   }
 
-  mostrarElemento('wrapCentroCostos', tieneDetalle ? 'none' : 'block');
   */
 
   // Ocultar siempre el detalle de insumos.
@@ -796,8 +792,6 @@ function manejarCambioTipoCompra() {
 
   setValor('lblMontosOrigen', '');
 
-  // El centro de costos permanece visible para todos los tipos.
-  mostrarElemento('wrapCentroCostos', 'block');
 
   bloquearMontosSegunRegla();
   recalcularTotales();
@@ -910,10 +904,7 @@ function construirCabecera() {
     fecha_vencimiento: getValor('fecha_vencimiento') || null,
     tipo_compra: getValor('tipo_compra'),
     forma_pago: getValor('forma_pago'),
-    vehiculo: getValor('vehiculo') || null,
     proyecto: getValor('proyecto') || null,
-    orden_compra_id: getValor('orden_compra_id') ? parseInt(getValor('orden_compra_id'), 10) : null,
-    centro_costos: getValor('centro_costos') || null,
     subtotal_servicios_locales: getNumero('subtotal_servicios_locales') || 0,
     subtotal_bienes_locales: getNumero('subtotal_bienes_locales') || 0,
     subtotal_bruto_factura: (getNumero('subtotal_servicios_locales') || 0) + (getNumero('subtotal_bienes_locales') || 0),
@@ -960,7 +951,7 @@ async function guardarFactura() {
     const res = Array.isArray(resultado) ? resultado[0] : resultado;
     const facturaId = res.factura_prov_id;
 
-    // vehiculo y proyecto ya los guarda la RPC (SECURITY DEFINER).
+    // El proyecto se guarda mediante la RPC.
 
     if (obtenerElemento('foto_factura')?.files?.[0]) {
       const ruta = await subirAdjunto(facturaId);
@@ -1005,7 +996,7 @@ const reg = await obtenerRegistro(VISTA_FORM, {
     schema: SCHEMA,
     campoId: 'factura_prov_id',
     valorId: facturaId,
-    select: 'factura_prov_id, vehiculo, proyecto'
+    select: 'factura_prov_id, proyecto'
   });
 
   Estado.idActual = reg.factura_prov_id;
@@ -1025,10 +1016,7 @@ const reg = await obtenerRegistro(VISTA_FORM, {
   setValor('nombre_proveedor', reg.nombre_proveedor);
   setValor('tipo_compra', reg.tipo_compra);
   setValor('forma_pago', reg.forma_pago);
-  setValor('vehiculo', contextoFactura?.vehiculo ?? reg.vehiculo);
   setValor('proyecto', contextoFactura?.proyecto ?? reg.proyecto);
-  setValor('orden_compra_id', reg.orden_compra_id);
-  setValor('centro_costos', reg.centro_costos);
   setValor('observacion', reg.observacion);
   setValor('subtotal_servicios_locales', reg.subtotal_servicios_locales || 0);
   setValor('subtotal_bienes_locales', reg.subtotal_bienes_locales || 0);
@@ -1280,14 +1268,6 @@ async function cargarCatalogosFormulario() {
       selectId: 'forma_pago',
       formularioCodigo: FORM_CODIGO,
       catalogoCodigo: 'FORMA_PAGO',
-      valor: 'valor',
-      texto: 'opcion_nombre'
-    }),
-    cargarCatalogo({
-      schema: SCHEMA,
-      selectId: 'vehiculo',
-      formularioCodigo: FORM_CODIGO,
-      catalogoCodigo: 'VEHICULO',
       valor: 'valor',
       texto: 'opcion_nombre'
     }),

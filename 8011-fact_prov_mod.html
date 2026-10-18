@@ -753,7 +753,7 @@ const SELECT_FIN10 = `
   impuesto_selectivo_consumo, otros_impuestos_tasas, monto_propina_legal,
   itbis_servicios_locales, itbis_bienes_locales, itbis_total, total_factura,
   proveedor_id, adjunto_url, estado, activo, eliminado, creado_por, modificado_por, 
-  fecha_creacion, fecha_modificacion, vehiculo, proyecto, centro_costos
+  fecha_creacion, fecha_modificacion, proyecto
 `;
 
 async function consultarGastos(filtros) {
@@ -1211,9 +1211,7 @@ function filasFacturaProveedor(registros) {
     RNC: item.rnc_proveedor,
     'Tipo identificación': item.tipo_identificacion ?? Proveedores.tipoIdentificacion(item.rnc_proveedor) ?? '',
     Proveedor: item.nombre_proveedor,
-    Vehículo: item.vehiculo || '',
 Proyecto: item.proyecto || '',
-'Centro de Costos': item.centro_costos || '',
     'Tipo de Compra / 606': item.tipo_compra,
     'Subtotal Servicios Locales': num(item.subtotal_servicios_locales),
     'Subtotal Bienes Locales': num(item.subtotal_bienes_locales),
