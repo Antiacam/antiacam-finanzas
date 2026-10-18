@@ -60,7 +60,7 @@ window.DGII606 = (() => {
   }
   function libro(registros,XLSX) {
     const datos=filas(registros),ws=XLSX.utils.aoa_to_sheet([encabezados,...datos]);
-    ws['!cols']=encabezados.map((_,i)=>({wch:i===1?16:[3,5].includes(i)?22:i>9?20:16}));
+    ws['!cols']=encabezados.map(titulo=>({wch:Math.max(16,titulo.length+2)}));
     ws['!autofilter']={ref:'A1:AA'+(datos.length+1)};
     for(let fila=2;fila<=datos.length+1;fila++)for(let col=10;col<=24;col++) {
       if(col===19)continue;
