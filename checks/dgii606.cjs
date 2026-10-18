@@ -19,3 +19,13 @@ assert.deepEqual(Array.from(api.fecha('2024-02-29')),['202402','29']);
 assert.equal(api.encabezados[19],'Tipo de Retención en ISR');assert.equal(api.encabezados[25],'Forma de Pago');
 const html=fs.readFileSync('8011-fact_prov_mod.html','utf8');assert(html.includes('id="btnDescargarExcel"'));assert(html.includes('id="btnExcelDGII"'));
 console.log('606 DGII: orden de 27 columnas, códigos numéricos, fechas separadas, ceros iniciales, retenciones y validaciones correctos.');
+
+let contenido;
+const mockXlsx={utils:{aoa_to_sheet:datos=>{contenido=datos;return {};},encode_cell:()=>'',book_new:()=>({}),book_append_sheet(){}}};
+api.libro([factura],mockXlsx);
+assert.equal(contenido[1][3],'02 - GASTOS POR TRABAJOS, SUMINISTROS Y SERVICIOS');
+assert.equal(contenido[1][19],'02 - HONORARIOS POR SERVICIOS');
+assert.equal(contenido[1][25],'03 - TARJETA CRÉDITO/DÉBITO');
+assert.equal(contenido[1].length,27);
+api.libro([sinRet],mockXlsx);assert.equal(contenido[1][19],'');assert.equal(contenido[1][25],'02 - CHEQUES/TRANSFERENCIAS/DEPÓSITO');
+console.log('Excel DGII: código y descripción en los tres catálogos, sin alterar el orden de columnas.');

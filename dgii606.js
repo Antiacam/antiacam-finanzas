@@ -83,9 +83,20 @@ window.DGII606 = (() => {
       }catch(error){throw new Error('Factura '+(r.factura_prov_id??index+1)+': '+error.message);}
     });
   }
+  const descripciones={"TIPO_COMPRA":{"10":"ADQUISICIONES DE ACTIVOS","11":"GASTOS DE SEGUROS","01":"GASTOS DE PERSONAL","02":"GASTOS POR TRABAJOS, SUMINISTROS Y SERVICIOS","03":"ARRENDAMIENTOS","04":"GASTOS DE ACTIVOS FIJO","05":"GASTOS DE REPRESENTACIÓN","06":"OTRAS DEDUCCIONES ADMITIDAS","07":"GASTOS FINANCIEROS","08":"GASTOS EXTRAORDINARIOS","09":"COMPRAS Y GASTOS QUE FORMARAN PARTE DEL COSTO DE VENTA"},"TIPO_RETENCION_ISR":{"00":"SIN RETENCIÓN","01":"ALQUILERES","02":"HONORARIOS POR SERVICIOS","03":"OTRAS RENTAS","04":"OTRAS RENTAS (Rentas Presuntas)","05":"INTERESES PAGADOS A PERSONAS JURIDICAS RESIDENTES","06":"INTERESES PAGADOS A PERSONAS FISICAS RESIDENTES","07":"RETENCION POR PROVEEDORES DEL ESTADO","08":"JUEGOS TELEFONICOS","09":"RETENCIONES SUBSECTOR DE GANADERÍA DE CARNE BOVINA"},"FORMA_PAGO":{"01":"EFECTIVO","02":"CHEQUES/TRANSFERENCIAS/DEPÓSITO","03":"TARJETA CRÉDITO/DÉBITO","04":"COMPRA A CREDITO","05":"PERMUTA","06":"NOTA DE CREDITO","07":"MIXTO"}};
+  function codigoDescripcion(catalogo,valor) {
+    if(valor===''||valor===null||valor===undefined)return '';
+    const cod=String(valor).padStart(2,'0');
+    return cod+' - '+descripciones[catalogo][cod];
+  }
   function libro(registros,XLSX) {
-    const datos=filas(registros),ws=XLSX.utils.aoa_to_sheet([encabezados,...datos]);
+    const datos=filas(registros).map(fila=>{
+      const salida=[...fila];
+      for(const [indice,catalogo] of [[3,'TIPO_COMPRA'],[19,'TIPO_RETENCION_ISR'],[25,'FORMA_PAGO']])salida[indice]=codigoDescripcion(catalogo,salida[indice]);
+      return salida;
+    }),ws=XLSX.utils.aoa_to_sheet([encabezados,...datos]);
     ws['!cols']=encabezados.map(titulo=>({wch:Math.max(16,titulo.length+2)}));
+    for(const indice of [3,19,25])ws['!cols'][indice]={wch:55};
     ws['!autofilter']={ref:'A1:AA'+(datos.length+1)};
     for(let fila=2;fila<=datos.length+1;fila++)for(let col=10;col<=24;col++) {
       if(col===19)continue;
