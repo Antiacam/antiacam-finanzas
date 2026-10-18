@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Antiacam · Finanzas</title>
   <link rel="stylesheet" href="base_estilo.css" />
-  <link rel="stylesheet" href="base_menu_lat.css" />
+  <link rel="stylesheet" href="base_menu_lat.css?v=20261018-alertas" />
   <style>
     :root {
       --color-primary: #1e3a8a;
@@ -45,7 +45,7 @@
     .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
     .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
     .form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-    .form-row.cols-busqueda { grid-template-columns: 2fr 1fr 1fr 1fr auto 1.25fr; align-items: end; }
+    .form-row.cols-busqueda { grid-template-columns: 2fr 1fr 1fr auto 1.25fr; align-items: end; }
     .field-wrap { display: flex; flex-direction: column; gap: 5px; }
     label { font-size: 12px; font-weight: 600; color: #334155; }
     .field-hint { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
@@ -194,10 +194,6 @@
           <input type="text" id="filtroGeneral" placeholder="Ej.: González, 101..., B010..." autocomplete="off" />
         </div>
         <div class="field-wrap">
-          <label for="filtroGastadoPor">Gastado por</label>
-          <input type="text" id="filtroGastadoPor" placeholder="Nombre" autocomplete="off" />
-        </div>
-        <div class="field-wrap">
           <label for="filtroFechaDesde">Fecha desde</label>
           <input type="date" id="filtroFechaDesde" />
         </div>
@@ -246,8 +242,6 @@
               <th>NCF</th>
               <th>Tipo compra / 606</th>
               <th>Forma pago</th>
-              <th>Gastado por</th>
-              <th>Tipo solicitud</th>
               <th>Servicios locales</th>
               <th>Bienes locales</th>
               <th>Subtotal bruto</th>
@@ -258,11 +252,11 @@
               <th>ITBIS bienes</th>
               <th>ITBIS total</th>
               <th>Total factura</th>
-              <th>Estado</th>
+              <th>Estado</th><th>Validación DGII</th>
             </tr>
           </thead>
           <tbody id="tbodyResultadosBusqueda">
-            <tr><td colspan="22">No hay registros cargados.</td></tr>
+            <tr><td colspan="21">No hay registros cargados.</td></tr>
           </tbody>
         </table>
       </div>
@@ -292,33 +286,34 @@
       <div class="edicion-layout">
         <div class="edicion-form-panel">
       <form id="formGasto" onsubmit="return false;">
+<p class="ayuda-obligatorios">* Obligatorio. Fecha de pago: obligatoria si hay retenciones; tipo ISR: obligatorio si hay monto de retención renta.</p>
         <input type="hidden" id="factura_prov_id" />
 
         <div class="form-row cols-4">
           <div class="field-wrap">
-            <label for="fecha_factura">Fecha *</label>
-            <input type="date" id="fecha_factura" required />
+            <label for="fecha_factura">Fecha <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <input type="date" id="fecha_factura" required>
           </div>
           <div class="field-wrap">
-            <label for="numero_ncf">NCF</label>
-            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" />
+            <label for="numero_ncf">NCF <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" required>
           </div>
           <div class="field-wrap autocomplete-wrap">
-            <label for="rnc_proveedor">RNC / Cédula</label>
-            <input type="text" id="rnc_proveedor" maxlength="20" autocomplete="off" />
+            <label for="rnc_proveedor">RNC / Cédula <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <input type="text" id="rnc_proveedor" maxlength="20" autocomplete="off" required>
             <div id="listaRnc" class="autocomplete-lista"></div>
           </div>
           <div class="field-wrap autocomplete-wrap">
-            <label for="nombre_proveedor">Proveedor *</label>
-            <input type="text" id="nombre_proveedor" maxlength="200" autocomplete="off" required />
+            <label for="nombre_proveedor">Proveedor <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <input type="text" id="nombre_proveedor" maxlength="200" autocomplete="off" required>
             <div id="listaProveedor" class="autocomplete-lista"></div>
           </div>
         </div>
 
         <div class="form-row cols-4">
           <div class="field-wrap">
-            <label for="tipo_compra">Tipo de bienes y servicios / 606</label>
-            <select id="tipo_compra">
+            <label for="tipo_compra">Tipo de bienes y servicios / 606 <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <select id="tipo_compra" required>
               <option value="">— Seleccione —</option>
               <option value="COMPRA MATERIALES">Compra de materiales</option>
               <option value="COMPRA EQUIPO">Compra de equipo</option>
@@ -335,25 +330,13 @@
             </select>
           </div>
           <div class="field-wrap">
-            <label for="forma_pago">Forma de pago</label>
-            <select id="forma_pago">
+            <label for="forma_pago">Forma de pago <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <select id="forma_pago" required>
               <option value="">— Seleccione —</option>
               <option value="TARJETA">Tarjeta</option>
               <option value="EFECTIVO">Efectivo</option>
               <option value="TRANSFERENCIA">Transferencia</option>
               <option value="CHEQUE">Cheque</option>
-            </select>
-          </div>
-          <div class="field-wrap">
-            <label for="gastado_por">Gastado por</label>
-            <select id="gastado_por"><option value="">— Seleccione —</option></select>
-          </div>
-          <div class="field-wrap">
-            <label for="tipo_solicitud">Tipo de solicitud</label>
-            <select id="tipo_solicitud">
-              <option value="">— Seleccione —</option>
-              <option value="DESEMBOLSO">Desembolso</option>
-              <option value="REEMBOLSO">Reembolso</option>
             </select>
           </div>
         </div>
@@ -463,10 +446,10 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="i01-base_conexion.js?v=20261017-seguridad"></script>
 <script src="i02-auth.js?v=20261017-seguridad"></script>
-<script src="base_menu_lat.js?v=20261017-seguridad"></script>
+<script src="base_menu_lat.js?v=20261018-alertas"></script>
 <script src="base_funcion.js"></script>
 <script src="proveedores.js?v=20261017-cedula"></script>
-<script src="dgii606.js?v=20261017-dgii"></script>
+<script src="dgii606.js?v=20261018-alertas"></script>
 
 <script>
 'use strict';
@@ -510,7 +493,7 @@ const CAMPOS_ITBIS = [
 const CAMPOS_NUMERICOS_EDITABLES = [...CAMPOS_NUMERICOS, ...CAMPOS_ITBIS];
 
 // Clasificación 606: registros "incompletos" si falta alguno de estos.
-const CAMPOS_CLASIFICACION = ['tipo_compra', 'forma_pago', 'gastado_por', 'tipo_solicitud'];
+const CAMPOS_CLASIFICACION = ['tipo_compra', 'forma_pago'];
 
 // ============================================================
 // ESTADO DE LA PANTALLA
@@ -587,7 +570,7 @@ function calcularTotalFactura() {
 // CATÁLOGO GASTADO_POR (mt_cat_opcion — igual que 8010)
 // ============================================================
 async function cargarCatalogos() {
-  for (const [id,codigo] of [['tipo_compra','TIPO_COMPRA'],['forma_pago','FORMA_PAGO'],['gastado_por','GASTADO_POR'],['tipo_solicitud','TIPO_SOLICITUD'],['tipo_retencion_isr','TIPO_RETENCION_ISR']]) {
+  for (const [id,codigo] of [['tipo_compra','TIPO_COMPRA'],['forma_pago','FORMA_PAGO'],['tipo_retencion_isr','TIPO_RETENCION_ISR']]) {
     await cargarCatalogo({schema:SCHEMA,selectId:id,formularioCodigo:FORMULARIO_CODIGO,catalogoCodigo:codigo,valor:'valor',texto:'opcion_nombre'});
   }
 }
@@ -678,8 +661,6 @@ function obtenerPayloadFormulario() {
     proveedor_id: Estado.proveedorId || Estado.registroEnEdicion?.proveedor_id || null,
     tipo_compra: valorTexto('tipo_compra'),
     forma_pago: valorTexto('forma_pago'),
-    gastado_por: valorTexto('gastado_por'),
-    tipo_solicitud: valorTexto('tipo_solicitud'),
     subtotal_servicios_locales: valorNumero('subtotal_servicios_locales') || 0,
     subtotal_bienes_locales: valorNumero('subtotal_bienes_locales') || 0,
     subtotal_bruto_factura: valorNumero('subtotal_bruto_factura') || 0,
@@ -694,6 +675,14 @@ function obtenerPayloadFormulario() {
   };
 }
 
+async function persistirCambiosFactura(id, payload) {
+  const { data, error } = await DB.tabla(TABLA_FIN10).update(payload).eq(CAMPO_ID, id).select(SELECT_FIN10).single();
+  if (error) throw error;
+  if (!data || String(data[CAMPO_ID]) !== String(id)) throw new Error('Factura: no se confirmó el guardado. Revise su sesión y los permisos de modificación.');
+  if (Object.hasOwn(payload, 'forma_pago') && String(data.forma_pago ?? '') !== String(payload.forma_pago ?? '')) throw new Error('Forma de pago: el servidor no confirmó el valor seleccionado.');
+  return data;
+}
+
 async function guardarGasto() {
   limpiarMensaje('mensajeFormulario');
   try {
@@ -701,15 +690,17 @@ async function guardarGasto() {
     if (!usuarioId) throw new Error('Debe iniciar sesión.');
 
     const payload = obtenerPayloadFormulario();
-    if (!payload.fecha_factura) throw new Error('Debe indicar la fecha.');
-    if (!payload.nombre_proveedor) throw new Error('Debe indicar el proveedor.');
+    const pendientes=DGII606.problemas(payload,{guardar:true});DGII606.marcar(pendientes);
+    if(pendientes.length)throw new Error(pendientes.map(p=>p.mensaje).join(String.fromCharCode(10)));
+
 
     const id = valorTexto(CAMPO_ID);
     if (!id) {
       throw new Error('Seleccione una factura desde la tabla (botón Editar) para modificarla. Para registrar nuevas facturas use la pantalla 8010 — Factura Proveedor.');
     }
 
-    const { error } = await DB.tabla(TABLA_FIN10).update(payload).eq(CAMPO_ID, id);
+    let error;
+    try { await persistirCambiosFactura(id, payload); } catch (err) { error = err; }
 
     if (error) {
       if (String(error.message || '').includes('idx_fin10_rnc_ncf_unique') || error.code === '23505') {
@@ -747,7 +738,6 @@ function limpiarFormularioModoNuevo() {
 function obtenerFiltrosBusqueda() {
   return {
     general: normalizar(getValor('filtroGeneral')),
-    gastadoPor: normalizar(getValor('filtroGastadoPor')),
     fechaDesde: getValor('filtroFechaDesde') || null,
     fechaHasta: getValor('filtroFechaHasta') || null,
     incompleto: !!getValor('filtroIncompleto'),
@@ -758,7 +748,7 @@ function obtenerFiltrosBusqueda() {
 const SELECT_FIN10 = `
   ncf_modificado, fecha_pago, tipo_retencion_isr, itbis_retenido, itbis_proporcionalidad, itbis_costo, itbis_adelantar, itbis_percibido, retencion_renta, isr_percibido,
   factura_prov_id, fecha_factura, numero_ncf, rnc_proveedor, tipo_identificacion, nombre_proveedor,
-  tipo_compra, forma_pago, gastado_por, tipo_solicitud,
+  tipo_compra, forma_pago,
   subtotal_servicios_locales, subtotal_bienes_locales, subtotal_bruto_factura,
   impuesto_selectivo_consumo, otros_impuestos_tasas, monto_propina_legal,
   itbis_servicios_locales, itbis_bienes_locales, itbis_total, total_factura,
@@ -918,14 +908,12 @@ function aplicarFiltrosLocales(registros, filtros) {
   if (filtros.general) {
     r = r.filter(x => normalizar([x.nombre_proveedor, x.rnc_proveedor, x.numero_ncf].join(' | ')).includes(filtros.general));
   }
-  if (filtros.gastadoPor) {
-    r = r.filter(x => normalizar(x.gastado_por).includes(filtros.gastadoPor));
-  }
+
   if (filtros.fechaDesde) r = r.filter(x => (x.fecha_factura || '') >= filtros.fechaDesde);
   if (filtros.fechaHasta) r = r.filter(x => (x.fecha_factura || '') <= filtros.fechaHasta);
 
   if (filtros.incompleto) {
-    r = r.filter(x => CAMPOS_CLASIFICACION.some(c => !valorClasificado(x[c])));
+    r = r.filter(x => DGII606.problemas(x).length > 0);
   }
 
   switch (filtros.orden) {
@@ -949,7 +937,6 @@ function actualizarResumen(registros) {
 
 function limpiarBusqueda() {
   setValor('filtroGeneral', '');
-  setValor('filtroGastadoPor', '');
   setValor('filtroFechaDesde', '');
   setValor('filtroFechaHasta', '');
   setValor('filtroIncompleto', false);
@@ -986,8 +973,6 @@ function renderizarResultados(registros) {
       <td><input class="editable-linea" data-campo="numero_ncf" data-id="${id}" value="${escaparHtmlLocal(r.numero_ncf || '')}"></td>
       <td><select class="editable-linea" data-campo="tipo_compra" data-id="${id}">${opcionesHtml('tipo_compra', r.tipo_compra)}</select></td>
       <td><select class="editable-linea" data-campo="forma_pago" data-id="${id}">${opcionesHtml('forma_pago', r.forma_pago)}</select></td>
-      <td><select class="editable-linea" data-campo="gastado_por" data-id="${id}">${opcionesHtml('gastado_por', r.gastado_por)}</select></td>
-      <td><select class="editable-linea" data-campo="tipo_solicitud" data-id="${id}">${opcionesHtml('tipo_solicitud', r.tipo_solicitud)}</select></td>
       ${campoNumeroLinea(r, 'subtotal_servicios_locales')}
       ${campoNumeroLinea(r, 'subtotal_bienes_locales')}
       ${campoNumeroLinea(r, 'subtotal_bruto_factura')}
@@ -999,6 +984,7 @@ function renderizarResultados(registros) {
       ${campoNumeroLinea(r, 'itbis_total')}
       <td class="col-total" id="total_linea_${id}">${fmt(r.total_factura)}</td>
       <td>${escaparHtmlLocal(r.estado || (r.activo === false ? 'Inactivo' : 'Activo'))}</td>
+      <td class="validacion-dgii">${DGII606.problemas(r).map(p=>escaparHtmlLocal(p.mensaje)).join('<br>') || 'Completo para DGII'}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -1032,60 +1018,40 @@ async function guardarCambioLinea(event) {
   const registro = _resultados.find(r => String(r[CAMPO_ID]) === String(id));
   if (!registro) return;
 
+  const anterior = registro[campo];
   let valor = el.value;
-  const payload = {};
-
+  const erroresCampo=DGII606.problemas({...registro,[campo]:valor},{guardar:true}).filter(p=>p.campo===campo);
+  if(erroresCampo.length){el.setAttribute('aria-invalid','true');el.classList.add('campo-invalido');msgBusqueda('Factura '+id+' — '+erroresCampo.map(p=>p.mensaje).join(String.fromCharCode(10)),'error',true);return;}
+  el.removeAttribute('aria-invalid');el.classList.remove('campo-invalido');
+  const candidato = {...registro};
+  const payload = {[campo]: CAMPOS_NUMERICOS_EDITABLES.includes(campo) ? num(valor) : valor || null};
+  Object.assign(candidato, payload);
   if (CAMPOS_NUMERICOS_EDITABLES.includes(campo)) {
-    valor = num(valor);
-    payload[campo] = valor;
-    registro[campo] = valor;
-
-    // Regla: itbis_total = itbis_servicios + itbis_bienes
-    const itbisTotal = num(registro.itbis_servicios_locales) + num(registro.itbis_bienes_locales);
-    registro.itbis_total = itbisTotal;
-    payload.itbis_total = itbisTotal;
-
-    const itbisTotalCampo = document.querySelector(`[data-id="${id}"][data-campo="itbis_total"]`);
-    if (itbisTotalCampo && campo !== 'itbis_total') itbisTotalCampo.value = itbisTotal.toFixed(2);
-
-    // Regla: total_factura = montos base + itbis_total
-    registro.subtotal_bruto_factura = num(registro.subtotal_servicios_locales) + num(registro.subtotal_bienes_locales);
-    payload.subtotal_bruto_factura = registro.subtotal_bruto_factura;
-    const subtotalCampo = document.querySelector(`[data-id="${id}"][data-campo="subtotal_bruto_factura"]`);
-    if (subtotalCampo) subtotalCampo.value = registro.subtotal_bruto_factura.toFixed(2);
-    const totalBase = CAMPOS_NUMERICOS.filter(c => c !== 'subtotal_bruto_factura').reduce((acc, c) => acc + num(registro[c]), 0);
-    const total = totalBase + itbisTotal;
-
-    payload.total_factura = total;
-    registro.total_factura = total;
-
-    const totalCelda = obtenerElemento(`total_linea_${id}`);
-    if (totalCelda) totalCelda.textContent = fmt(total);
-  } else {
-    payload[campo] = valor || null;
-    registro[campo] = valor || null;
+    payload.itbis_total = num(candidato.itbis_servicios_locales) + num(candidato.itbis_bienes_locales);
+    payload.subtotal_bruto_factura = num(candidato.subtotal_servicios_locales) + num(candidato.subtotal_bienes_locales);
+    payload.total_factura = CAMPOS_NUMERICOS.filter(c => c !== 'subtotal_bruto_factura').reduce((acc,c)=>acc+num(candidato[c]),0) + payload.itbis_total;
   }
-
   try {
-    el.classList.remove('ok', 'error');
-    el.classList.add('guardando');
-
-    // Auditoría: la establece el trigger fn_app_set_campos_auditoria.
-    const { error } = await DB.tabla(TABLA_FIN10).update(payload).eq(CAMPO_ID, id);
-    if (error) throw error;
-
-    el.classList.remove('guardando');
-    el.classList.add('ok');
-    setTimeout(() => el.classList.remove('ok'), 900);
-
-    _resultadosFiltrados = aplicarFiltrosLocales(_resultados, obtenerFiltrosBusqueda());
+    el.disabled = true;
+    el.classList.remove('ok','error');el.classList.add('guardando');
+    const guardado = await persistirCambiosFactura(id,payload);
+    Object.assign(registro,guardado);
+    for (const clave of Object.keys(payload)) {
+      const control=document.querySelector('[data-id="'+id+'"][data-campo="'+clave+'"]');
+      if(control)control.value=guardado[clave] ?? '';
+      if(String(valorTexto(CAMPO_ID))===String(id))setValor(clave,guardado[clave] ?? '');
+    }
+    if(String(valorTexto(CAMPO_ID))===String(id))calcularTotalFactura();
+    const totalCelda=obtenerElemento('total_linea_'+id);if(totalCelda)totalCelda.textContent=fmt(registro.total_factura);
+    const validacion=el.closest('tr')?.querySelector('.validacion-dgii');
+    if(validacion)validacion.textContent=DGII606.problemas(registro).map(p=>p.mensaje).join(' | ') || 'Completo para DGII';
+    el.classList.add('ok');setTimeout(()=>el.classList.remove('ok'),900);
+    _resultadosFiltrados=aplicarFiltrosLocales(_resultados,obtenerFiltrosBusqueda());
     actualizarResumen(_resultadosFiltrados);
-  } catch (err) {
-    console.error(err);
-    el.classList.remove('guardando');
-    el.classList.add('error');
-    msgBusqueda(err.message || 'No fue posible guardar el cambio en línea.', 'error', true);
-  }
+  } catch(err) {
+    console.error(err);el.value=anterior ?? '';el.classList.add('error');
+    msgBusqueda('Factura '+id+' — '+(DGII606.nombres[campo] || campo)+': no se guardó el cambio. '+(err.message || 'Revise su sesión y permisos.'),'error',true);
+  } finally {el.disabled=false;el.classList.remove('guardando');}
 }
 
 function cargarRegistroEnFormulario(id) {
@@ -1103,8 +1069,6 @@ function cargarRegistroEnFormulario(id) {
   setValor('nombre_proveedor', r.nombre_proveedor || '');
   setValor('tipo_compra', r.tipo_compra || '');
   setValor('forma_pago', r.forma_pago || '');
-  setValor('gastado_por', r.gastado_por || '');
-  setValor('tipo_solicitud', r.tipo_solicitud || '');
   setValor('activo', r.activo === false ? 'false' : 'true');
   CAMPOS_NUMERICOS_EDITABLES.forEach(c => setValor(c, num(r[c])));
   calcularTotalFactura();
@@ -1261,8 +1225,6 @@ Proyecto: item.proyecto || '',
     'ITBIS Bienes Locales': num(item.itbis_bienes_locales),
     'ITBIS Total': num(item.itbis_total),
     'Forma de Pago': item.forma_pago,
-    'Gastado por': item.gastado_por,
-    'Tipo Solicitud': item.tipo_solicitud,
     'Total Factura': num(item.total_factura),
     Adjunto: item.adjunto_url || '',
     Estado: item.estado || (item.activo === false ? 'Inactivo' : 'Activo'),
@@ -1360,7 +1322,7 @@ async function inicializarPantalla() {
       }
     });
 
-    ['filtroGeneral', 'filtroGastadoPor', 'filtroFechaDesde', 'filtroFechaHasta', 'filtroIncompleto', 'ordenResultados'].forEach(id => {
+    ['filtroGeneral', 'filtroFechaDesde', 'filtroFechaHasta', 'filtroIncompleto', 'ordenResultados'].forEach(id => {
       const el = obtenerElemento(id);
       el.addEventListener('change', buscarRegistros);
       if (el.type === 'text') el.addEventListener('keydown', e => { if (e.key === 'Enter') buscarRegistros(); });
@@ -1375,7 +1337,7 @@ async function inicializarPantalla() {
     console.log('8011-fact_prov_mod inicializada.');
   } catch (err) {
     console.error('Error inicializando:', err);
-    msgFormulario('Error inicializando la pantalla. Revise consola.', 'error');
+    msgFormulario('Carga de la pantalla: no se pudieron consultar proveedores, permisos o catálogos. Verifique su sesión y conexión; vuelva a abrir la pantalla.', 'error');
   }
 }
 

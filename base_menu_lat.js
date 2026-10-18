@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     location.replace('index.html');
   });
   document.body.prepend(nav);
-  for (const [id,catalogo] of [['gastado_por','GASTADO_POR'],['vehiculo','VEHICULO'],['proyecto','PROYECTO']]) {
+  for (const [id,catalogo] of [['vehiculo','VEHICULO'],['proyecto','PROYECTO']]) {
     const select=document.getElementById(id);
     if(!select) continue;
     const button=document.createElement('button');button.type='button';button.textContent='Agregar opción';button.className='btn-mini';

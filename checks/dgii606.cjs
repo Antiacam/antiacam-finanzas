@@ -9,10 +9,10 @@ assert.equal(fila[12],150);assert.equal(fila[13],27);assert.equal(fila[14],5);as
 assert.equal(fila[15],'','No inventar ITBIS proporcional');
 const sinRet={...factura,rnc_proveedor:'123456789',fecha_pago:null,itbis_retenido:null,tipo_retencion_isr:'00',retencion_renta:null,forma_pago:'TRANSFERENCIA'};
 const filaRnc=api.filas([sinRet])[0];assert.equal(filaRnc[2],1);assert.equal(filaRnc[8],'');assert.equal(filaRnc[19],'');assert.equal(filaRnc[25],2);
-assert.throws(()=>api.filas([{...factura,fecha_factura:'2026-02-30'}]),/inexistente/);
+assert.throws(()=>api.filas([{...factura,fecha_factura:'2026-02-30'}]),/Fecha de factura: ingrese una fecha válida/);
 assert.throws(()=>api.filas([{...factura,tipo_compra:'SERVICIO'}]),/Factura 50/);
-assert.throws(()=>api.filas([{...factura,forma_pago:'otro'}]),/código válido/);
-assert.throws(()=>api.filas([{...factura,fecha_pago:null}]),/fecha de pago/);
+assert.throws(()=>api.filas([{...factura,forma_pago:'otro'}]),/Forma de pago: el valor «otro»/);
+assert.throws(()=>api.filas([{...factura,fecha_pago:null}]),/fecha de pago/i);
 assert.throws(()=>api.filas([{...factura,itbis_retenido:-1}]),/negativo/);
 assert.throws(()=>api.filas([{...factura,tipo_retencion_isr:'00'}]),/Seleccione el tipo/);
 assert.deepEqual(Array.from(api.fecha('2024-02-29')),['202402','29']);

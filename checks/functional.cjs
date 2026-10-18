@@ -56,9 +56,9 @@ console.log('Excel: clasificación 1/2 y cédula con ceros iniciales correctas.'
   context.obtenerElemento=id=>{const element=originalNode(id);element.addEventListener=()=>{};return element;};
   await vm.runInContext('inicializarPantalla()',context);
   assert.equal(vm.runInContext('_proveedores',context),proveedores);
-  assert.equal(catalogos.length,7);
+  assert.equal(catalogos.length,5);
   assert.equal(botones.has('btnGuardar'),true);
   assert.equal(mensajes.some(message=>message.tipo==='error'),false);
   assert.equal(mensajes.some(message=>message.texto==='Complete los datos de la factura.'),true);
-  console.log('Inicialización completa: proveedores, siete catálogos, eventos y formulario listos.');
+  console.log('Inicialización completa: proveedores, cinco catálogos, eventos y formulario listos.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

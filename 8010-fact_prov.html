@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Antiacam · Finanzas</title>
   <link rel="stylesheet" href="base_estilo.css" />
-  <link rel="stylesheet" href="base_menu_lat.css" />
+  <link rel="stylesheet" href="base_menu_lat.css?v=20261018-alertas" />
   <style>
     :root {
       --color-primary: #1e3a8a;
@@ -64,8 +64,8 @@
     .form-row.row-montos .field-wrap, .form-row.row-prov-1 .field-wrap, .form-row.row-prov-2 .field-wrap { min-width: 0; }
     .form-row.row-montos { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px; align-items: end; }
     /* Fila 1 proporcional al tamaño: RNC 15 · Nombre 70 · Tipo compra 70 · Tipo solicitud 35 */
-    .form-row.row-prov-1 { grid-template-columns: minmax(150px, 15fr) minmax(0, 70fr) minmax(0, 70fr) minmax(0, 35fr); grid-auto-flow: column; grid-auto-columns: minmax(130px, 24fr); align-items: start; }
-    .form-row.row-prov-2 { grid-template-columns: 1fr 1fr 1fr 1fr 2.4fr 1.1fr; align-items: start; }
+    .form-row.row-prov-1 { grid-template-columns: minmax(150px, 15fr) minmax(0, 70fr) minmax(0, 70fr); grid-auto-flow: column; grid-auto-columns: minmax(130px, 24fr); align-items: start; }
+    .form-row.row-prov-2 { grid-template-columns: 1fr 1fr 1fr 2.4fr 1.1fr; align-items: start; }
     @media (max-width: 1100px) {
       .form-row.row-montos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .form-row.row-prov-1 { grid-template-columns: 1fr 2fr; grid-auto-flow: row; grid-auto-columns: auto; }
@@ -162,6 +162,7 @@
     </div>
 
     <form id="formFactura" novalidate>
+<p class="ayuda-obligatorios">* Obligatorio. Fecha de pago: obligatoria si hay retenciones; tipo ISR: obligatorio si hay monto de retención renta.</p>
       <input type="hidden" id="factura_prov_id" />
       <input type="hidden" id="via_carga" value="MANUAL" />
       <input type="hidden" id="tipo_ncf_hidden" value="MANUAL" />
@@ -171,14 +172,14 @@
         <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;"><span>Comprobante Fiscal</span><span id="badgeTipoNcf"></span></div>
         <div class="form-row cols-4">
           <div class="field-wrap">
-            <label for="numero_ncf">NCF / e-NCF <span style="color:var(--color-danger)">*</span></label>
-            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" placeholder="Ej: E310000123456 o B0100001234" />
+            <label for="numero_ncf">NCF / e-NCF <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label>
+            <input type="text" id="numero_ncf" maxlength="20" autocomplete="off" placeholder="Ej: E310000123456 o B0100001234" required>
             <div style="display:flex;gap:6px;margin-top:4px;">
               <button type="button" id="btnActivarEcf" class="btn-form btn-ecf" style="padding:5px 12px;font-size:11.5px;">⚡ Es e-CF (QR)</button>
               <button type="button" id="btnActivarEcfManual" class="btn-form btn-ecf" style="padding:5px 12px;font-size:11.5px;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;">✏️ e-CF Manual</button>
             </div>
           </div>
-          <div class="field-wrap"><label for="fecha_factura">Fecha factura <span style="color:var(--color-danger)">*</span></label><input type="date" id="fecha_factura" /></div>
+          <div class="field-wrap"><label for="fecha_factura">Fecha factura <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><input type="date" id="fecha_factura" required></div>
           <div class="field-wrap"><label for="fecha_vencimiento">Fecha vencimiento</label><input type="date" id="fecha_vencimiento" /></div>
           <div class="field-wrap"><label for="estado_visible">Estado</label><input type="text" id="estado_visible" value="Registrada" readonly /></div>
         </div>
@@ -224,16 +225,14 @@
         <div class="section-title">Proveedor</div>
         <!-- Fila 1: RNC (15) · Nombre (70) · Tipo de compra (70) · Tipo solicitud (35) -->
         <div class="form-row row-prov-1">
-          <div class="field-wrap"><label for="rnc_proveedor">RNC / Cédula <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="rnc_proveedor" maxlength="15" autocomplete="off" placeholder="RNC o cédula del proveedor" /><div id="listaRnc" class="autocomplete-lista"></div></div></div>
-          <div class="field-wrap"><label for="nombre_proveedor">Nombre proveedor <span style="color:var(--color-danger)">*</span></label><div class="autocomplete-wrap"><input type="text" id="nombre_proveedor" maxlength="70" autocomplete="off" placeholder="Buscar o escribir proveedor" title="Si no existe, escríbalo directamente." /><div id="listaProveedor" class="autocomplete-lista"></div></div></div>
-          <div class="field-wrap"><label for="tipo_compra">Tipo de bienes y servicios / 606 <span style="color:var(--color-danger)">*</span></label><select id="tipo_compra"><option value="">— Seleccione —</option></select></div>
-          <div class="field-wrap"><label for="tipo_solicitud">Tipo solicitud</label><select id="tipo_solicitud"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="rnc_proveedor">RNC / Cédula <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><div class="autocomplete-wrap"><input type="text" id="rnc_proveedor" maxlength="15" autocomplete="off" placeholder="RNC o cédula del proveedor" required><div id="listaRnc" class="autocomplete-lista"></div></div></div>
+          <div class="field-wrap"><label for="nombre_proveedor">Nombre proveedor <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><div class="autocomplete-wrap"><input type="text" id="nombre_proveedor" maxlength="70" autocomplete="off" placeholder="Buscar o escribir proveedor" title="Si no existe, escríbalo directamente." required><div id="listaProveedor" class="autocomplete-lista"></div></div></div>
+          <div class="field-wrap"><label for="tipo_compra">Tipo de bienes y servicios / 606 <span style="color:var(--color-danger)"></span> <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><select id="tipo_compra" required><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap" id="wrapMontoEcf" style="display:none;"><label for="monto_ecf_visible">Monto eCF</label><input type="number" id="monto_ecf_visible" step="0.01" readonly style="background:#f1f5f9;color:#0e7490;font-weight:700;" /></div>
         </div>
-        <!-- Fila 2: Forma de pago · Gastado por · Vehículo · Centro de costos · Proyecto · N° Orden de compra -->
+        <!-- Fila 2: Forma de pago · Vehículo · Centro de costos · Proyecto · N° Orden de compra -->
         <div class="form-row row-prov-2">
-          <div class="field-wrap"><label for="forma_pago">Forma de pago</label><select id="forma_pago"><option value="">— Seleccione —</option></select></div>
-          <div class="field-wrap"><label for="gastado_por">Gastado por</label><select id="gastado_por"><option value="">— Seleccione —</option></select></div>
+          <div class="field-wrap"><label for="forma_pago">Forma de pago <span class="campo-obligatorio" aria-label="obligatorio">*</span></label><select id="forma_pago" required><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap"><label for="vehiculo">Vehículo</label><select id="vehiculo"><option value="">— Seleccione —</option></select></div>
           <div class="field-wrap" id="wrapCentroCostos"><label for="centro_costos">Centro de costos</label><input type="text" id="centro_costos" maxlength="100" placeholder="Opcional" title="Opcional para compras directas" /></div>
           <div class="field-wrap"><label for="proyecto">Proyecto</label><select id="proyecto"><option value="">— Seleccione —</option></select></div>
@@ -330,10 +329,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0"></script>
 <script src="i01-base_conexion.js?v=20261017-seguridad"></script>
 <script src="i02-auth.js?v=20261017-seguridad"></script>
-<script src="base_menu_lat.js?v=20261017-seguridad"></script>
+<script src="base_menu_lat.js?v=20261018-alertas"></script>
 <script src="base_funcion.js"></script>
 <script src="proveedores.js?v=20261017-cedula"></script>
-<script src="dgii606.js?v=20261017-dgii"></script>
+<script src="dgii606.js?v=20261018-alertas"></script>
 
 <script>
 'use strict';
@@ -869,13 +868,9 @@ function actualizarItemEcfMatch(total = null) {
 // GUARDAR Y CARGAR FACTURA
 // ============================================================
 function validarFormulario() {
-  if (!validarRequerido([
-    { id: 'numero_ncf', nombre: 'NCF / e-NCF' },
-    { id: 'fecha_factura', nombre: 'Fecha factura' },
-    { id: 'rnc_proveedor', nombre: 'RNC proveedor' },
-    { id: 'nombre_proveedor', nombre: 'Nombre proveedor' },
-    { id: 'tipo_compra', nombre: 'Tipo de compra' }
-  ])) return false;
+  const pendientes=DGII606.problemas(construirCabecera(),{guardar:true});
+  DGII606.marcar(pendientes);
+  if(pendientes.length){mostrarMensaje(pendientes.map(p=>p.mensaje).join(String.fromCharCode(10)),'error');return false;}
 
   if (TIPOS_CON_DETALLE.includes(getValor('tipo_compra'))) {
     const lineas = obtenerLineas();
@@ -915,8 +910,6 @@ function construirCabecera() {
     fecha_vencimiento: getValor('fecha_vencimiento') || null,
     tipo_compra: getValor('tipo_compra'),
     forma_pago: getValor('forma_pago'),
-    gastado_por: getValor('gastado_por'),
-    tipo_solicitud: getValor('tipo_solicitud'),
     vehiculo: getValor('vehiculo') || null,
     proyecto: getValor('proyecto') || null,
     orden_compra_id: getValor('orden_compra_id') ? parseInt(getValor('orden_compra_id'), 10) : null,
@@ -1032,8 +1025,6 @@ const reg = await obtenerRegistro(VISTA_FORM, {
   setValor('nombre_proveedor', reg.nombre_proveedor);
   setValor('tipo_compra', reg.tipo_compra);
   setValor('forma_pago', reg.forma_pago);
-  setValor('gastado_por', reg.gastado_por);
-  setValor('tipo_solicitud', reg.tipo_solicitud);
   setValor('vehiculo', contextoFactura?.vehiculo ?? reg.vehiculo);
   setValor('proyecto', contextoFactura?.proyecto ?? reg.proyecto);
   setValor('orden_compra_id', reg.orden_compra_id);
@@ -1165,7 +1156,7 @@ async function subirAdjunto(facturaId) {
   if (!archivo) return null;
   const ruta = nombreAdjunto(facturaId, getValor('rnc_proveedor'), getValor('numero_ncf'));
   const { error } = await window.sb.storage.from(BUCKET_FACTURAS).upload(ruta, archivo, { cacheControl: '3600', upsert: true });
-  if (error) throw new Error('No fue posible subir el adjunto.');
+  if (error) throw new Error('Adjunto de factura: no se pudo subir el archivo. Verifique el formato, el tamaño (máximo 10 MB), su conexión y sus permisos.');
   return ruta;
 }
 
@@ -1294,22 +1285,6 @@ async function cargarCatalogosFormulario() {
     }),
     cargarCatalogo({
       schema: SCHEMA,
-      selectId: 'gastado_por',
-      formularioCodigo: FORM_CODIGO,
-      catalogoCodigo: 'GASTADO_POR',
-      valor: 'valor',
-      texto: 'opcion_nombre'
-    }),
-    cargarCatalogo({
-      schema: SCHEMA,
-      selectId: 'tipo_solicitud',
-      formularioCodigo: FORM_CODIGO,
-      catalogoCodigo: 'TIPO_SOLICITUD',
-      valor: 'valor',
-      texto: 'opcion_nombre'
-    }),
-    cargarCatalogo({
-      schema: SCHEMA,
       selectId: 'vehiculo',
       formularioCodigo: FORM_CODIGO,
       catalogoCodigo: 'VEHICULO',
@@ -1373,7 +1348,7 @@ async function inicializarPantalla() {
     console.log('5010-factura_proveedor limpio inicializado.');
   } catch (err) {
     console.error('Error inicializando:', err);
-    mostrarMensaje('Error inicializando la pantalla. Revise consola.', 'error');
+    mostrarMensaje('Carga de la pantalla: no se pudieron consultar proveedores, permisos o catálogos. Verifique su sesión y conexión; vuelva a abrir la pantalla.', 'error');
   }
 }
 
